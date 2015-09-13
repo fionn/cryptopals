@@ -1,33 +1,29 @@
 #!/usr/bin/env python3
 # Single-byte XOR cipher -- "Cooking MC's like a pound of bacon"
 
-import binascii
-from string import ascii_lowercase as alphabet
+from string import ascii_lowercase
 from collections import Counter
+from m02 import fixed_xor
 
 def xor_everything(s):
-    s_bytes = bytes.fromhex(s).decode()
+    s_bytes = bytes.fromhex(s)
 
     cypher = []
     for k in range(256):
-        xor = ""
-        for j in (s_bytes):
-            xor += hex(ord(j) ^ (k))[2:].zfill(2)  # hex drops leading 0
-        #print(k, chr(k), hex(k), "\t", len(xor), "\t", xor)
-        cypher.append([k, binascii.unhexlify(xor)])
+        xor = fixed_xor(bytes([k] * len(s_bytes)), s_bytes)
+        cypher.append(xor)
 
     return cypher
 
 def printable(stack):
-    for pair in stack[:]:  # a copy of the list
-        for character in pair[1]:
-            if(character < 32 or character > 126):
-                stack.remove(pair)
+    for binary in stack[:]:  # a copy of the list
+        for character in binary:
+            if(character < 10 or character > 126):  # need < 32 for m04
+                stack.remove(binary)
                 break
     return stack
 
 def distribution():
-    # From en.algoritmy.net/article/40379/Letter-frequency-English
     f = open("data/frequency.txt", "r").read().strip().split()
     f = dict(zip(f[0::2], f[1::2]))
     f[" "] = 19
@@ -40,28 +36,32 @@ def distribution():
 def score(sentence):
     count = Counter(sentence.lower())
     var = 0
-    for letter in list(alphabet + " "):
+    for letter in list(ascii_lowercase + " "):
         count[letter] = count[letter] * 100 / len(sentence)  #sum(count.values())
         var += abs(count[letter] * count[letter] - \
-                 distribution()[letter] * distribution()[letter])
+                   distribution()[letter] * distribution()[letter])
     return var
 
-def plaintext(sentences):
+def mostprobable(sentences):
     bound = float("inf")
+    thisisit = None
     for sentence in sentences:
-        sentence = sentence[1].decode()
+        if isinstance(sentence, bytearray):  # I want to be able to reuse this
+            sentence = sentence.decode()     # function on text as well
         if score(sentence) < bound:
             bound = score(sentence)
             thisisit = sentence
     return thisisit
 
+def break_single_byte_xor(s):
+    candidates = xor_everything(s)
+    candidates = printable(candidates)
+    return mostprobable(candidates)
+
 
 if __name__ == "__main__":
 
     s = open("data/03.txt", "r").read().strip()
-    
-    candidates = xor_everything(s)
-    candidates = printable(candidates)
 
-    print(plaintext(candidates))
+    print(break_single_byte_xor(s))
 

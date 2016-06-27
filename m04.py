@@ -3,15 +3,17 @@
 
 from m03 import break_single_byte_xor, mostprobable
 
+def findxoredstring(cyphertext):
+    candidates = []
+    for line in cyphertext:
+        line = break_single_byte_xor(line)
+        #if line != None:
+        candidates.append(line)
+    return mostprobable(candidates)
+
 if __name__ == "__main__":
 
     f = open("data/04.txt", "r").read().splitlines()
+    f = [bytes.fromhex(line) for line in f]
 
-    candidates = []
-    for line in f:
-        line = break_single_byte_xor(line)
-        if line != None:
-            candidates.append(line)
-
-    print(mostprobable(candidates))
-
+    print(findxoredstring(f).decode())

@@ -7,7 +7,7 @@ def fixed_xor(a, b):
     d = bytearray()
     for i, j in zip(a, b):
         d.append(i ^ j)
-    return d
+    return bytes(d)
 
 if __name__ == "__main__":
     f = open("data/02.txt", "r").read().splitlines()

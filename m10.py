@@ -5,12 +5,27 @@ from base64 import b64decode
 from Crypto.Cipher import AES
 from m02 import fixed_xor
 
+def encrypt_aes_cbc(plaintext, key, iv):
+    cypher = AES.new(key, AES.MODE_ECB)
+    blocks = [plaintext[i:i + len(key)] for i in range(0, len(plaintext), len(key))]
+
+    vector = iv
+    cyphertext = b''
+
+    for block in blocks:
+        block = fixed_xor(block, vector)
+        block = cypher.encrypt(block)
+        cyphertext += block
+        vector = block
+
+    return cyphertext
+
 def decrypt_aes_cbc(cyphertext, key, iv):
     cypher = AES.new(key, AES.MODE_ECB)
     blocks = [cyphertext[i:i + len(key)] for i in range(0, len(cyphertext), len(key))]
 
     vector = iv
-    plaintext = bytearray()
+    plaintext = b''
 
     for aesblock in blocks:
         block = cypher.decrypt(aesblock)

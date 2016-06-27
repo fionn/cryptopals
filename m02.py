@@ -4,11 +4,9 @@
 from binascii import hexlify
 
 def fixed_xor(a, b):
-    c, d =  "", bytearray()
+    d = bytearray()
     for i, j in zip(a, b):
         d.append(i ^ j)
-        #print(hexlify(d).decode())
-        #c += hex(i ^ j)[2:].zfill(2)  # to drop "0x" and pad left
     return d
 
 if __name__ == "__main__":

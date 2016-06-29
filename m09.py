@@ -2,13 +2,16 @@
 # Implement PKCS#7 padding
 
 def pkcs7(plaintext, blocksize):
-    # https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7
     pad = blocksize - (len(plaintext) % blocksize)
     assert pad < 256
     if pad != 0:
         return plaintext + pad * bytes([pad])
     else:
         return plaintext + blocksize * bytes([blocksize])
+
+def de_pkcs7(plaintext):
+    plaintext = plaintext[:len(plaintext) - plaintext[-1]]
+    return plaintext
 
 if __name__ == "__main__":
     plaintext = bytes("YELLOW SUBMARINE", "utf8")

@@ -4,6 +4,7 @@
 from base64 import b64decode
 from Crypto.Cipher import AES
 from m02 import fixed_xor
+from m09 import de_pkcs7
 
 def encrypt_aes_cbc(plaintext, key, iv):
     cypher = AES.new(key, AES.MODE_ECB)
@@ -11,7 +12,6 @@ def encrypt_aes_cbc(plaintext, key, iv):
 
     vector = iv
     cyphertext = b''
-
     for block in blocks:
         block = fixed_xor(block, vector)
         block = cypher.encrypt(block)
@@ -26,19 +26,18 @@ def decrypt_aes_cbc(cyphertext, key, iv):
 
     vector = iv
     plaintext = b''
-
     for aesblock in blocks:
         block = cypher.decrypt(aesblock)
         plaintext += fixed_xor(block, vector)
         vector = aesblock
 
-    return plaintext
+    return de_pkcs7(plaintext)
 
 if __name__ == "__main__":
     cyphertext = b64decode(open("data/10.txt", "r").read())
     
     key = bytes("YELLOW SUBMARINE", "utf8")
-    iv = len(key) * bytes([0])
+    iv = bytes(len(key))
 
     plaintext = decrypt_aes_cbc(cyphertext, key, iv)
     print(plaintext.decode())

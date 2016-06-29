@@ -24,7 +24,7 @@ def encryption_oracle(plaintext):
 
     return cyphertext
 
-def detect_ecb_or_cbc(cyphertext):
+def detect_ecb(cyphertext):
     if ecb_score(cyphertext, 16) > 0:
         return "ECB"
     else:
@@ -34,5 +34,5 @@ if __name__ == "__main__":
     plaintext = bytes("YELLOW SUBMARINE", "utf8") * 3
     cyphertext = encryption_oracle(plaintext)
 
-    print(detect_ecb_or_cbc(cyphertext))
+    print(detect_ecb(cyphertext))
     

@@ -1,0 +1,17 @@
+email=AAAAAAAAAAadmin:::::::::::&uid=10&role=user                   # get 2nd
+_______________/_______________/_______________/_______________/    # block
+
+email=AAAAAAAAAAAAA&uid=10&role=user                                # discard
+_______________/_______________/_______________/_______________/    # 3rd block
+
+email=AAAAAAAAAAAAA&uid=10&role=[ block 2 here ]                    # replace
+_______________/_______________/_______________/_______________/    # 3rd block
+
+
+email=AAAAAAAAAAAAAAAAAAAAAAAAA.admin:::::::::::com&uid=10&role=user   
+_______________/_______________/_______________/_______________/________________/ 
+                                    |
+                                    └-------------------┐
+                                                        |
+email=AAAAAAAAAAAAAAAAAAAAAAAAA.com&uid=10&role=admin:::::::::::user
+_______________/_______________/_______________/_______________/________________/ 

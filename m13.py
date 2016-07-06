@@ -34,7 +34,7 @@ def decrypt_oracle(profile):
 
 def rewrite_cookie(email = "fake@mail.com"):
     bs = 16
-    assert len(email) % bs == 13 
+    assert len(email) % bs == 13, "email must be 13 (mod 16) characters"
     admin_block = pkcs7(b'admin', bs).decode()
     d = int(len(email) / bs) * bs
     email = email[:-3] + admin_block + email[-3:]

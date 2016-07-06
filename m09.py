@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Implement PKCS#7 padding
 
-def pkcs7(plaintext, blocksize):
+def pkcs7(plaintext, blocksize = 16):
     pad = blocksize - (len(plaintext) % blocksize)
     assert pad < 256
     if pad != 0:

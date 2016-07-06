@@ -52,7 +52,7 @@ def break_ecb(oracle):
 
 if __name__ == "__main__":
 
-    if detect_ecb(oracle(64 * b'A')) != "ECB":
+    if not detect_ecb(oracle(64 * b'A')):
         print("Not ECB")
         raise SystemExit
 

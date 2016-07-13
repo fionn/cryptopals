@@ -21,15 +21,13 @@ def decrypt(cyphertext):
     cypher = AES.new(RANDOM_KEY, AES.MODE_ECB)
     return de_pkcs7(cypher.decrypt(cyphertext))
 
-def len_prefix(oracle): # broken when len(prefix) = 0 and >> 0.
+def len_prefix(oracle): 
     for i in range(32, 48):
         c = oracle(i * b'A')
-        if detect_ecb(c): # rewrite without function call?
-            offset = (48 - i) % 16
-            for b in range(len(c) // 16):
-                if c[(b+1)*16:(b+2)*16] == c[(b+2)*16:(b+3)*16]:
-                    return 16 * b + offset
-            return 0
+        for b in range(len(c) // 16 - 1):
+            if c[(b+1)*16:(b+2)*16] == c[(b+2)*16:(b+3)*16]:
+                return 48 - i + 16 * b
+    return 0
 
 def len_string(oracle):
     l = len(oracle())

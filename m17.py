@@ -32,9 +32,9 @@ def attack_block(block, c = cbc_oracle()):
     for i in range(15, -1, -1):
         for b in range(256):
             c_prime[i] = b
-            #print("block", str(block) + ": c' =", hexlify(c_prime).decode() \
-            #       + ", p =",  hexlify(p).decode(), end="\r")
             if padding_oracle(bytes(c_prime) + c[block]):
+                print("block", str(block) + ": c' =", hexlify(c_prime).decode() \
+                      + ", p =",  hexlify(p).decode(), end="\r")
                 if i == 15:
                     c_test = c_prime
                     c_test[i - 1] ^= c_prime[i]
@@ -48,7 +48,7 @@ def attack_block(block, c = cbc_oracle()):
         for j in range(i, 16):
             c_prime[j] = c_prime[j] ^ (16 - i) ^ (16 - i + 1)
 
-    #print()
+    print()
     return bytes(p)
 
 def attack(c = cbc_oracle()):

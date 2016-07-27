@@ -31,7 +31,7 @@ def decrypt_aes_cbc(cyphertext, key, iv):
         plaintext += fixed_xor(block, vector)
         vector = aesblock
 
-    return de_pkcs7(plaintext)
+    return plaintext
 
 if __name__ == "__main__":
     cyphertext = b64decode(open("data/10.txt", "r").read())
@@ -39,6 +39,6 @@ if __name__ == "__main__":
     key = bytes("YELLOW SUBMARINE", "utf8")
     iv = bytes(len(key))
 
-    plaintext = decrypt_aes_cbc(cyphertext, key, iv)
+    plaintext = de_pkcs7(decrypt_aes_cbc(cyphertext, key, iv))
     print(plaintext.decode())
 

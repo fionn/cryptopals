@@ -15,7 +15,6 @@ def aes_ctr(c, k, n = 0):
     ctr = 0
     for block in c:
         keystream = pack('<Qq', n, ctr)
-        print(keystream)
         m += fixed_xor(cypher.encrypt(keystream), block)
         ctr += 1
     return m

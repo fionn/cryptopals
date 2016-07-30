@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # CBC bitflipping attacks
 
-from Crypto.Cipher import AES
 from Crypto.Random.random import getrandbits
 from m09 import pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc

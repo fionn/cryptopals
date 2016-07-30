@@ -3,7 +3,6 @@
 
 from base64 import b64decode
 from binascii import hexlify
-from Crypto.Cipher import AES
 from Crypto.Random.random import getrandbits, randint
 from m09 import pkcs7
 from m15 import de_pkcs7
@@ -15,6 +14,9 @@ IV = bytes(getrandbits(8) for i in range(16))
 def chose_plaintext():
     f = open("data/17.txt", "r").read().splitlines()
     return pkcs7(b64decode(f[randint(0, len(f) - 1)]))
+    #f = open("scratch/tyger.txt", "r").read()
+    #f = bytes(f, "ascii")
+    #return pkcs7(f)
 
 def cbc_oracle(plaintext = chose_plaintext(), k = RANDOM_KEY, iv = IV):
     return encrypt_aes_cbc(plaintext, k, iv)

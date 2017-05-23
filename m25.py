@@ -7,13 +7,15 @@ from Crypto.Random.random import getrandbits
 from m02 import fixed_xor
 from m18 import aes_ctr
 
+RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+
 def edit(cyphertext, key, offset, newtext):
     plaintext = aes_ctr(cyphertext, key)
     plaintext = plaintext[:offset] + newtext + plaintext[offset + len(newtext):]
     return aes_ctr(plaintext, key)
 
 def break_rarw(cyphertext):
-    edited_cyphertext = edit(cyphertext, key, 0, bytes(len(cyphertext)))
+    edited_cyphertext = edit(cyphertext, RANDOM_KEY, 0, bytes(len(cyphertext)))
     return fixed_xor(cyphertext, edited_cyphertext)
 
 if __name__ == "__main__":
@@ -21,9 +23,7 @@ if __name__ == "__main__":
     k = bytes("YELLOW SUBMARINE", "ascii")
     cypher = AES.new(k, AES.MODE_ECB)
     plaintext = cypher.decrypt(c)
-
-    key = bytes(getrandbits(8) for i in range(16))
-    cyphertext = aes_ctr(plaintext, key)
+    cyphertext = aes_ctr(plaintext, RANDOM_KEY)
 
     rarw_plaintext = break_rarw(cyphertext)
     assert rarw_plaintext == plaintext

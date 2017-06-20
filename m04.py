@@ -7,8 +7,8 @@ def findxoredstring(cyphertext):
     candidates = []
     for line in cyphertext:
         line = break_single_byte_xor(line)
-        #if line != None:
-        candidates.append(line)
+        if line:
+            candidates.append(line)
     return mostprobable(candidates)
 
 if __name__ == "__main__":
@@ -17,3 +17,4 @@ if __name__ == "__main__":
     f = [bytes.fromhex(line) for line in f]
 
     print(findxoredstring(f).decode())
+

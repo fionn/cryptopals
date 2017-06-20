@@ -4,7 +4,6 @@
 from Crypto.Random.random import getrandbits
 from Crypto.Cipher import AES
 from m09 import pkcs7, de_pkcs7
-from m12 import blocksize
 
 RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
 

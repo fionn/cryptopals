@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Crack an MT19937 seed
 
-from m21 import MT19937
 from random import randint
 from time import time, sleep
+from m21 import MT19937
 
 def sleep_mersenne():
     sleep(randint(40, 1000))
@@ -16,7 +16,7 @@ def sleep_mersenne():
 def crack_seed(r):
     seed = int(time())
     while MT19937(seed).random() != r and seed > 0:
-        seed -=1
+        seed -= 1
     return seed
 
 if __name__ == "__main__":

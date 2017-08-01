@@ -3,7 +3,7 @@
 
 from math import inf as infinity
 from m02 import fixed_xor
-from frequency import frequency
+from data.frequency import frequency
 
 def expectation(k, length, t = 0.01):
     if chr(k).lower() in frequency:

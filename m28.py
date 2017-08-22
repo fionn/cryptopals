@@ -4,6 +4,7 @@
 class SHA1:
     blocksize = 64
     digest_size = 20
+    name = "sha1"
 
     def __init__(self, data = bytes()):
         self.h = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0)
@@ -27,8 +28,12 @@ class SHA1:
             self._update_register(chunk)
         return self
 
+    def copy(self):
+        from copy import copy
+        return copy(self)
+
     @staticmethod
-    def _pad_message(data):
+    def pad_message(data):
         data_bits = 8 * len(data)
         data += b'\x80'
         data += b'\x00' * ((56 - len(data) % 64) % 64)
@@ -37,7 +42,7 @@ class SHA1:
         return data
 
     def _chunks(self):
-        data = self._pad_message(self.data)
+        data = self.pad_message(self.data)
         for i in range(0, len(data), self.blocksize):
             yield data[i : i + self.blocksize]
 
@@ -50,7 +55,7 @@ class SHA1:
             w[j] = self._leftrotate(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1)
 
         h = list(self._current_register)
-        a, b, c, d, e = h[0], h[1], h[2], h[3], h[4]
+        a, b, c, d, e = h
 
         for j in range(80):
             if j in range(20):

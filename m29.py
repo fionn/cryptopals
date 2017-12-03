@@ -48,4 +48,5 @@ if __name__ == "__main__":
     for q in extend_sha1(d, z):
         if verify_sha1_mac(q, m_prime, k):
             print(q.hexdigest())
+            break
 

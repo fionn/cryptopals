@@ -88,7 +88,7 @@ class HMACListener:
         try:
             url = "http://{}:{}".format(*self.server)
             urllib.request.urlopen(url)
-        except urllib.error.HTTPError:
+        except urllib.error.HTTPError or ConnectionResetError:
             pass
 
 class HMACAttack:
@@ -162,4 +162,4 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         listener.stop()
-        
+

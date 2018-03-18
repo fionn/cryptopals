@@ -11,22 +11,19 @@ class DHProtocolPeer(DHPeer):
 
     def __init__(self, p, g, peer = None):
         super().__init__(p, g)
-        self.peer = peer or self.__class__
+        self.peer = peer
         self.A = self.public_key()
         self._B = None
         self.received_cyphertext = None
         self.received_message = None
 
     def init_peer(self):
-        self.peer = self.peer(self.p, self.g, self)
-        self.send_pubkey()
+        self.peer = self.__class__(self.p, self.g, self)
         return self.peer
 
-    def new_peer(self, peer = None):
-        if not peer:
-            self.peer = self.__class__
-        else:
-            self.peer = peer
+    def swap_peer(self, peer):
+        self.peer = peer
+        self.receive_pubkey(peer.A)
 
     def send_pubkey(self):
         self.peer.receive_pubkey(self.A)
@@ -34,19 +31,19 @@ class DHProtocolPeer(DHPeer):
     def receive_pubkey(self, B):
         self._B = B
 
-    def aes_key(self):
+    def _aes_key(self):
         s = self.session_key(self._B)
         return SHA1(s.to_bytes(s.bit_length() // 8 + 1, "big")).digest()[:16]
 
     def send_message(self, message):
         iv = bytes(getrandbits(8) for i in range(16))
-        cyphertext = encrypt_aes_cbc(pkcs7(message), self.aes_key(), iv)
+        cyphertext = encrypt_aes_cbc(pkcs7(message), self._aes_key(), iv)
         self.peer.receive_message(cyphertext + iv)
 
     def receive_message(self, cyphertext):
         self.received_cyphertext = cyphertext
         iv = cyphertext[-16:]
-        message = de_pkcs7(decrypt_aes_cbc(cyphertext[:-16], self.aes_key(), iv))
+        message = de_pkcs7(decrypt_aes_cbc(cyphertext[:-16], self._aes_key(), iv))
         self.received_message = message
 
     def reply(self):
@@ -59,53 +56,51 @@ class DHProtocolPeer(DHPeer):
         self.peer.receive_message(self.received_cyphertext)
         return message
 
-def dh_protocol(p, g):
+def dh_protocol(p, g, message):
     alice = DHProtocolPeer(p, g)
     bob = alice.init_peer()
+    alice.send_pubkey()
     bob.send_pubkey()
 
-    message = b"foo"
-    alice.send_message(b"foo")
+    alice.send_message(message)
     bob.reply()
 
-    assert alice.received_message == message
+    return alice.received_message
 
-def dh_parameter_injection(p, g):
+def dh_parameter_injection(p, g, message):
     alice = DHProtocolPeer(p, g)
-
     mallory = alice.init_peer()
-    mallory.A = mallory.p
-    mallory.new_peer()
-
-    bob = mallory.init_peer()
-    # this sets mallory._B = bob.A
-    bob.send_pubkey()
-
-    mallory.new_peer(alice)
-    # this sets alice._B = mallory.p
+    alice.send_pubkey()
+    mallory.A = mallory.p  # parameter injection
     mallory.send_pubkey()
 
+    bob = mallory.init_peer()
+    mallory.send_pubkey()
+    bob.send_pubkey()
+
     intercepted = []
-    alice.send_message(b"Attack at dawn")
-    mallory.new_peer(bob)
-    mallory_key = bytes(1) # p^a % p = 0
+    alice.send_message(message)
+    mallory_key = bytes(1)  # p^a % p = 0
     intercepted.append(mallory.forward_and_decrypt(mallory_key))
 
     bob.reply()
-    mallory.new_peer(alice)
+    mallory.swap_peer(alice)
     intercepted.append(mallory.forward_and_decrypt(mallory_key))
 
-    return set(intercepted), alice.received_message
+    intercepted = set(intercepted)
+    assert len(intercepted) == 1
+    return intercepted.pop()
 
 if __name__ == "__main__":
     p = int(open("data/33.txt", "r").read().replace("\n", ""), 16)
     g = 2
 
-    dh_protocol(p, g)
+    message = b"Attack at dawn"
+    received_message = dh_protocol(p, g, message)
+    assert received_message == message
 
-    intercepted, message = dh_parameter_injection(p, g)
+    intercepted = dh_parameter_injection(p, g, message)
 
-    assert len(intercepted) == 1
-    assert intercepted.pop() == message
+    assert intercepted == message
     print(message.decode())
 

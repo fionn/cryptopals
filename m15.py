@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # PKCS#7 padding validation
 
+class PKCS7PaddingError(ValueError):
+    pass
+
 def de_pkcs7(plaintext):
-    try:
-        pad_length = plaintext[-1]
-        assert pad_length * bytes([pad_length]) == plaintext[- pad_length:]
-        return plaintext[:-pad_length]
-    except Exception:
-        print("invalid padding")
-        raise SystemExit
+    pad_length = plaintext[-1]
+    if not pad_length * bytes([pad_length]) == plaintext[- pad_length:]:
+        raise PKCS7PaddingError
+    return plaintext[:-pad_length]
 
 if __name__ == "__main__":
     s1 = b"ICE ICE BABY\x04\x04\x04\x04"

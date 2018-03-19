@@ -2,8 +2,9 @@
 
 import unittest
 import gc
-from hashlib import sha1
 import hmac
+import base64
+from hashlib import sha1
 from Crypto.Random.random import randint, getrandbits
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
@@ -12,6 +13,10 @@ from Crypto.Hash import MD4
 import m01
 import m02
 import m03
+import m04
+import m05
+import m06
+import m08
 import m09
 import m10
 import m15
@@ -31,6 +36,7 @@ import m35
 KEY = B"YELLOW_SUBMARINE"
 IV = bytes(len(KEY))
 MESSAGE = b"Attack at dawn"
+BLOCKSIZE = 16
 PRIME = 197
 G = 2
 
@@ -65,6 +71,58 @@ class Test03(unittest.TestCase):
     def test_m03_score_empty_input(self):
         """score zero for zero-length input"""
         self.assertEqual(m03.score(b''), 0)
+
+class Test04(unittest.TestCase):
+
+    def test_m04_find_xored_string(self):
+        """find_xored_string"""
+        with open("data/04.txt", "r") as f:
+            f = f.read().splitlines()
+            f = [bytes.fromhex(line) for line in f]
+            xored_string = b"Now that the party is jumping\n"
+            self.assertEqual(m04.findxoredstring(f), xored_string)
+
+class Test05(unittest.TestCase):
+
+    def test_m05_repeating_key_xor(self):
+        """repeating_key_xor"""
+        with open("data/05.txt", "r") as f:
+            message = bytes(f.read().rstrip(), "ascii")
+            key = b"ICE"
+            c = m05.repeating_key_xor(key, message)
+            self.assertEqual(c.hex(), "0b3637272a2b2e63622c2e69692a23693a2a3"
+                                      "c6324202d623d63343c2a2622632427276527"
+                                      "2a282b2f20430a652e2c652a3124333a653e2"
+                                      "b2027630c692b20283165286326302e27282f")
+
+class Test06(unittest.TestCase):
+
+    def test_m06_hamming_distance(self):
+        """Hamming distance matches known value"""
+        s1, s2 = b"this is a test", b"wokka wokka!!!"
+        self.assertEqual(m06.d_H(s1, s2), 37)
+        self.assertEqual(m06.d_H(s2, s2), 0)
+
+    def test_m06_key(self):
+        """Break repeating key xor"""
+        with open("data/06.txt", "r") as f:
+            cyphertext = base64.b64decode(f.read())
+            self.assertEqual(m06.key(cyphertext), b"Terminator X: Bring the noise")
+
+class Test08(unittest.TestCase):
+
+    def test_m08_ecb_score(self):
+        """Trivial values for ecb_score"""
+        self.assertEqual(m08.ecb_score(bytes(BLOCKSIZE), BLOCKSIZE), 0)
+        self.assertEqual(m08.ecb_score(bytes(2 * BLOCKSIZE), BLOCKSIZE), 1)
+
+    def test_m08_detct_ecb(self):
+        """Detect ECB"""
+        with open("data/08.txt", "r") as f:
+            f = [bytes.fromhex(cyphertext) for cyphertext in f.read().splitlines()]
+            ecb_encrypted = m08.detect_ecb(f, BLOCKSIZE)
+            index = f.index(ecb_encrypted)
+            self.assertEqual(index, 132)
 
 class Test09(unittest.TestCase):
 
@@ -139,7 +197,7 @@ class Test18(unittest.TestCase):
         self.assertEqual(plaintext, MESSAGE)
 
 class Test21(unittest.TestCase):
-    
+
     def test_m21_mersenne_twister(self):
         """MT19937 returns a known good value"""
         # https://oeis.org/A221557

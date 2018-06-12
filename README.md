@@ -5,7 +5,7 @@ Cryptopals
 
 My solutions to the [~~Matasano~~ Cryptopals challenges](https://cryptopals.com/) in Python 3.
 
-There's partial test coverage. Run `make test` to test.
+There's partial test coverage (78%). Test with `make test`.
 
 Set 1: Basics
 -------------

@@ -19,6 +19,8 @@ import m06
 import m08
 import m09
 import m10
+import m11
+import m12
 import m15
 import m16
 import m18
@@ -32,6 +34,7 @@ import m31
 import m33
 import m34
 import m35
+import m36
 
 KEY = B"YELLOW_SUBMARINE"
 IV = bytes(len(KEY))
@@ -104,10 +107,17 @@ class Test06(unittest.TestCase):
         self.assertEqual(m06.d_H(s2, s2), 0)
 
     def test_m06_key(self):
-        """Break repeating key xor"""
+        """Generate key"""
         with open("data/06.txt", "r") as f:
             cyphertext = base64.b64decode(f.read())
             self.assertEqual(m06.key(cyphertext), b"Terminator X: Bring the noise")
+
+    def test_m06_break_repeating_key_xor(self):
+        """Break repeating key xor"""
+        with open("data/06.txt", "r") as f:
+            cyphertext = base64.b64decode(f.read())
+            self.assertEqual(m06.break_repeating_key_xor(cyphertext)[:33],
+                             b"I'm back and I'm ringin' the bell")
 
 class Test08(unittest.TestCase):
 
@@ -130,6 +140,12 @@ class Test09(unittest.TestCase):
         """de_pkcs7 inverts pkcs7"""
         message = m09.de_pkcs7(m09.pkcs7(MESSAGE))
         self.assertEqual(message, MESSAGE)
+
+    def test_m09_zero_padding(self):
+        """PKCS7 with zero padding"""
+        zero_pad_message = b"YELLOW SUBMARINE"
+        message = m09.de_pkcs7(m09.pkcs7(zero_pad_message))
+        self.assertEqual(message, zero_pad_message)
 
 class Test10(unittest.TestCase):
 
@@ -154,6 +170,29 @@ class Test10(unittest.TestCase):
         cyphertext = m10.encrypt_aes_cbc(m, KEY, IV)
         plaintext = m10.decrypt_aes_cbc(cyphertext, KEY, IV)
         self.assertEqual(m, plaintext)
+
+class Test11(unittest.TestCase):
+
+    def test_m11_detect_ecb(self):
+        """Detect ECB"""
+        for _ in range(10):
+            cyphertext = m11.encryption_oracle(MESSAGE * 3)
+            self.assertIn(m11.detect_ecb(cyphertext), [True, False])
+
+class Test12(unittest.TestCase):
+
+    def test_m12_blocksize(self):
+        """Detect blocksize"""
+        self.assertEqual(m12.blocksize(m12.oracle), 16)
+
+    def test_m12_len_string(self):
+        """Detect string length"""
+        self.assertEqual(m12.len_string(m12.oracle), 138)
+
+    def test_m12_break_ecb(self):
+        """Break ECB"""
+        self.assertEqual(m12.break_ecb(m12.oracle).split(b"\n")[0],
+                         b"Rollin' in my 5.0")
 
 class Test15(unittest.TestCase):
 
@@ -266,7 +305,7 @@ class Test28(unittest.TestCase):
         h.append(m28.SHA1(m).new(m).update(m).hexdigest())
 
         h = set(h)
-        self.assertEqual(h, set(['da39a3ee5e6b4b0d3255bfef95601890afd80709']))
+        self.assertEqual(h, set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
 
     def test_m28_sha1_long_input(self):
         """SHA1 of variable message length matches hashlib.sha1"""
@@ -342,6 +381,12 @@ class Test28(unittest.TestCase):
         self.assertEqual(h1.hexdigest(), h2.hexdigest())
         self.assertEqual(h2.hexdigest(), h3.hexdigest())
         self.assertEqual(h3.hexdigest(), h4.hexdigest())
+
+    def test_m28_copy(self):
+        """Copy SHA1 object"""
+        h = m28.SHA1(MESSAGE)
+        h_prime = h.copy()
+        self.assertEqual(h.digest(), h_prime.digest())
 
 class Test30(unittest.TestCase):
 
@@ -437,15 +482,90 @@ class Test30(unittest.TestCase):
         k_prime = b'inauthentic'
         self.assertNotEqual(m30.md4_mac(m, k), m30.md4_mac(m, k_prime))
 
+    def test_m30_copy(self):
+        """Copy MD4 object"""
+        h = m30.MD4(MESSAGE)
+        h_prime = h.copy()
+        self.assertEqual(h.digest(), h_prime.digest())
+
+    def test_m30_state_from_hex(self):
+        """Extract MD4 register from hex digest"""
+        h = m30.MD4(b"fud for thought")
+        register = m30.md4_state_from_hex(h.hexdigest())
+        self.assertEqual(register, m30.md4_state_from_object(h))
+
+    def test_m30_state_from_binary(self):
+        """Extract MD4 register from binary digest"""
+        h = m30.MD4(b"fud for thought")
+        register = m30.md4_state_from_binary(h.digest())
+        self.assertEqual(register, m30.md4_state_from_object(h))
+
+    def test_m30_verify_md4_mac(self):
+        """Verify MD4 MAC"""
+        mac = m30.md4_mac(MESSAGE, KEY)
+        self.assertTrue(m30.verify_md4_mac(mac, MESSAGE, KEY))
+
+    def test_m30_md_padding(self):
+        """MD padding"""
+        data = b"llllll"
+        padding = m30.md_padding(data)
+        padding_prime = b"\x80" \
+                        + b"\x00" * ((56 - len(data) - 1 % m30.MD4.blocksize)
+                                     % m30.MD4.blocksize) \
+                        + (8 * len(data)).to_bytes(8, "little")
+        self.assertEqual(padding, padding_prime)
+
+    def test_m30_extend_md4(self):
+        """Extended MD4 MAC forgery"""
+        m = MESSAGE
+        k = KEY
+        z = b"No, dusk!"
+
+        mac = m30.md4_mac(m, k)
+        m_prime = m + bytearray(m30.md_padding(k + m)) + z
+
+        extended_mac = b""
+        for q in m30.extend_md4(mac, z):
+            if m30.verify_md4_mac(q, m_prime, k):
+                extended_mac = q
+                break
+
+        self.assertTrue(m30.verify_md4_mac(extended_mac, m_prime, k))
+
 class Test31(unittest.TestCase):
 
-    def testi_m31_hmac_sha1(self):
+    def test_m31_hmac_sha1(self):
         """hmac_sha1 matches hmac.new(k, m, sha1)"""
         k = KEY
         m = MESSAGE
         h = m31.hmac_sha1(k, m)
         h_prime = hmac.new(k, m, sha1)
         self.assertEqual(h.digest(), h_prime.digest())
+
+    def test_m31_hmac_sha1_large_key(self):
+        """hmac_sha1 with large key"""
+        k = KEY * 128
+        m = MESSAGE
+        h = m31.hmac_sha1(k, m)
+        h_prime = hmac.new(k, m, sha1)
+        self.assertEqual(h.digest(), h_prime.digest())
+
+    def test_m31_insecure_compare_identical(self):
+        """insecure_compare identifies identical bytes"""
+        a = b"identical bytes"
+        self.assertTrue(m31.insecure_compare(a, a, 0))
+
+    def test_m31_insecure_compare_different(self):
+        """insecure_compare distinguishes different bytes"""
+        a = "different bytes"
+        b = "different bytez"
+        self.assertFalse(m31.insecure_compare(a, b, 0))
+
+    def test_m31_verify_hmac_sha1_hex(self):
+        """verify HMAC"""
+        k, m = KEY, MESSAGE
+        signature = m31.hmac_sha1(k, m).hexdigest().encode()
+        self.assertTrue(m31.verify_hmac_sha1_hex(m, signature, k, 0))
 
 class Test33(unittest.TestCase):
 
@@ -491,6 +611,64 @@ class Test35(unittest.TestCase):
         """Diffie-Hellman inject malicious parameter g = p - 1"""
         plaintext = m35.dh_malicious_g(PRIME, G, MESSAGE, PRIME - 1)
         self.assertEqual(plaintext, MESSAGE)
+
+class Test36(unittest.TestCase):
+
+    def test_m36_client_pubkey(self):
+        """client-side public key"""
+        carol = m36.Client(PRIME, "e@ma.il", "pw", 2, 3)
+        carol.pubkey()
+        self.assertEqual(carol.A, carol.pubkey())
+
+    def test_m36_server_pubkey(self):
+        """server-side public key"""
+        parameters = {"N": PRIME,
+                      "g": 2,
+                      "k": 3,
+                      "I": "some@ema.il",
+                      "p": "password"
+                     }
+        steve = m36.Server()
+        steve.negotiate_receive(parameters)
+        steve.verifier()
+        steve.pubkey()
+        self.assertEqual(steve.B, steve.pubkey())
+
+    def test_m36_bad_email(self):
+        """mismatched emails"""
+        parameters = {"N": PRIME,
+                      "g": 2,
+                      "k": 3,
+                      "I": "some@ema.il",
+                      "p": "password"
+                     }
+        steve = m36.Server()
+        steve.negotiate_receive(parameters)
+        bad_parameters = {"I": "diff@e.mail", "pubkey": 123}
+        self.assertRaises(ValueError,
+                          lambda: steve.receive_email_pubkey(bad_parameters))
+
+    def test_m36_bad_hmac(self):
+        """hmacs don't match"""
+        parameters = {"N": PRIME,
+                      "g": 2,
+                      "k": 3,
+                      "I": "some@ema.il",
+                      "p": "password"
+                     }
+        steve = m36.Server()
+        steve.negotiate_receive(parameters)
+        steve.scrambler()
+        steve.verifier()
+        steve.pubkey()
+        steve.A = 123
+        steve.gen_K()
+        response = steve.receive_hmac(0xdeadbeef)
+        self.assertEqual(response, 500)
+
+    def test_m36_srp_protocol(self):
+        """SRP protocol server verification"""
+        self.assertEqual(m36.srp_protocol(), 200)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, warnings="ignore")

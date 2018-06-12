@@ -4,10 +4,7 @@
 def pkcs7(plaintext, blocksize = 16):
     pad = blocksize - (len(plaintext) % blocksize)
     assert pad < 256
-    if pad != 0:
-        return plaintext + pad * bytes([pad])
-    else:
-        return plaintext + blocksize * bytes([blocksize])
+    return plaintext + pad * bytes([pad])
 
 def de_pkcs7(plaintext):
     plaintext = plaintext[:len(plaintext) - plaintext[-1]]

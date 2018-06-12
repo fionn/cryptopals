@@ -1,4 +1,6 @@
 *.swp
 .pylintrc
+coverage
+tags
 __pycache__
 

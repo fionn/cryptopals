@@ -61,7 +61,7 @@ Set 5: Diffie-Hellman and friends
 33. [x] [Implement Diffie-Hellman](m33.py)
 34. [x] [Implement a MITM key-fixing attack on Diffie-Hellman with parameter injection](m34.py)
 35. [x] [Implement DH with negotiated groups, and break with malicious "g" parameters](m35.py)
-36. [ ] Implement Secure Remote Password (SRP)
+36. [x] [Implement Secure Remote Password (SRP)](m36.py)
 37. [ ] Break SRP with a zero key
 38. [ ] Offline dictionary attack on simplified SRP
 39. [ ] Implement RSA

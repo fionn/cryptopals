@@ -1,5 +1,17 @@
+MAKEFLAGS = --warn-undefined-variables
+
 SRC = m??.py
 TEST = test.py
+VENV ?= venv
+
+venv: requirements.txt requirements_dev.txt
+	@python3 -m venv $@ --prompt $@::crypto
+	@source $@/bin/activate && pip install -r $< -r requirements_dev.txt
+	@echo "enter virtual environment: source $@/bin/activate"
+
+.PHONY: outdated
+outdated: $(VENV)
+	@source $(VENV)/bin/activate && pip list --outdated
 
 .PHONY: uml
 uml: packages.svg
@@ -25,10 +37,10 @@ tags: $(SRC) $(TEST)
 
 .PHONY: test
 test:
-	@python -W ignore -m unittest
+	@python -m unittest
 
 coverage: $(SRC) $(TEST)
-	@coverage run --source=. --branch --concurrency=thread test.py
+	@coverage run --branch --concurrency=thread --omit=venv/* test.py
 	@coverage report -m
 	@coverage html -d ./coverage
 	@coverage erase
@@ -37,3 +49,17 @@ coverage: $(SRC) $(TEST)
 lint:
 	@pylint -f colorized $(SRC) $(TEST)
 
+.PHONY: flake8
+flake8:
+	@flake8 $(SRC) $(TEST)
+
+.PHONY: typecheck
+typecheck:
+	@mypy $(SRC)
+
+.PHONY: clean
+clean:
+	@$(RM) -r coverage/
+	@$(RM) -r .mypy_cache/
+	@$(RM) -r __pycache__/
+	@$(RM) tags

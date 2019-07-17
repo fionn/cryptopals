@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-# AES in ECB mode
+"""AES in ECB mode"""
 
 from base64 import b64decode
+
 from Crypto.Cipher import AES
 
-if __name__ == "__main__":
-    cyphertext = b64decode(open("data/07.txt", "r").read())
-    key = bytes("YELLOW SUBMARINE", "utf8")
+def main() -> None:
+    with open("data/07.txt", "r") as data:
+        cyphertext = b64decode(data.read())
+
+    key = b"YELLOW SUBMARINE"
 
     cypher = AES.new(key, AES.MODE_ECB)
     cleartext = cypher.decrypt(cyphertext)
 
     print(cleartext.decode())
 
+if __name__ == "__main__":
+    main()

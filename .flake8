@@ -1,0 +1,5 @@
+[flake8]
+ignore = E302, E305, E741, E116, E114, W503, E265, E124, E126 E127
+format = pylint
+max-line-length = 90
+statistics = true

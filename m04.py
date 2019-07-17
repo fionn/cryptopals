@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-# Detect single-character XOR -- "Now that the party is jumping"
+"""Detect single-character XOR"""
+# "Now that the party is jumping"
+
+from typing import List
 
 from m03 import break_single_byte_xor, mostprobable
 
-def findxoredstring(cyphertext):
+def findxoredstring(cyphertext: List[bytes]) -> bytes:
     candidates = []
     for line in cyphertext:
         line = break_single_byte_xor(line)
@@ -11,10 +14,11 @@ def findxoredstring(cyphertext):
             candidates.append(line)
     return mostprobable(candidates)
 
+def main() -> None:
+    with open("data/04.txt", "r") as f:
+        data = [bytes.fromhex(line) for line in f.read().splitlines()]
+
+    print(findxoredstring(data).decode())
+
 if __name__ == "__main__":
-
-    f = open("data/04.txt", "r").read().splitlines()
-    f = [bytes.fromhex(line) for line in f]
-
-    print(findxoredstring(f).decode())
-
+    main()

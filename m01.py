@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-# Convert hex to base64
+"""Convert hex to base64"""
 
 import base64
 
-def hex_to_base64(s):
-    s_bytes = bytes.fromhex(s)
-    s_64 = base64.b64encode(s_bytes).decode("ascii")  #.decode() just removes the b'.
-    return s_64
+def hex_to_base64(hex_str: str) -> str:
+    s_bytes = bytes.fromhex(hex_str)
+    return base64.b64encode(s_bytes).decode("ascii")
+
+def main() -> None:
+    with open("data/01.txt", "r") as s:
+        print(hex_to_base64(s.read().strip()))
 
 if __name__ == "__main__":
-    s = open("data/01.txt", "r").read().strip()
-    print(hex_to_base64(s))
-
+    main()

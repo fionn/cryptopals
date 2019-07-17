@@ -1,6 +1,7 @@
 *.swp
 .pylintrc
-coverage
 tags
-__pycache__
-
+venv/
+coverage/
+__pycache__/
+.mypy_cache/

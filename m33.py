@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-# Implement Diffie-Hellman
+"""Implement Diffie-Hellman"""
+
+from typing import Tuple
 
 from Crypto.Random.random import randrange
 
 class DHPeer:
 
-    def __init__(self, p, g):
+    def __init__(self, p: int, g: int) -> None:
         self.p = p
         self.g = g
         self._a = randrange(p)
 
-    def public_key(self):
+    def public_key(self) -> int:
         return pow(self.g, self._a, self.p)
 
-    def session_key(self, B):
+    def session_key(self, B: int) -> int:
         return pow(B, self._a, self.p)
 
-def dh_key_exchange(p, g):
+def dh_key_exchange(p: int, g: int) -> Tuple[int, int]:
     alice = DHPeer(p, g)
     bob = DHPeer(p, g)
 
@@ -28,11 +30,14 @@ def dh_key_exchange(p, g):
 
     return s_a, s_b
 
-if __name__ == "__main__":
-    p = int(open("data/33.txt", "r").read().replace("\n", ""), 16)
+def main() -> None:
+    with open("data/33.txt", "r") as p_file:
+        p = int(p_file.read().replace("\n", ""), 16)
     g = 2
 
     s_a, s_b = dh_key_exchange(p, g)
     assert s_a == s_b
     print(s_a)
 
+if __name__ == "__main__":
+    main()

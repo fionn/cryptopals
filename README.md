@@ -3,9 +3,9 @@ Cryptopals
 
 > *Let us speak no more of faith in man, but bind him down from mischief by the chains of cryptography.*
 
-My solutions to the [~~Matasano~~ Cryptopals challenges](https://cryptopals.com/) in Python 3.
+My solutions to the [~~Matasano~~ Cryptopals Crypto Challenges](https://cryptopals.com/) in Python 3.
 
-There's partial test coverage (78%). Test with `make test`.
+Test with `make test` and generate a test coverage report with `make coverage`.
 
 Set 1: Basics
 -------------
@@ -48,7 +48,7 @@ Set 4: Stream crypto and randomness
 
 25. [x] [Break "random access read/write" AES CTR](m25.py)
 26. [x] [CTR bitflipping](m26.py)
-27. [x] [Recover the key from CBC with IV=Key](m27.py)
+27. [x] [Recover the key from CBC with IV = Key](m27.py)
 28. [x] [Implement a SHA-1 keyed MAC](m28.py)
 29. [x] [Break a SHA-1 keyed MAC using length extension](m29.py)
 30. [x] [Break an MD4 keyed MAC using length extension](m30.py)
@@ -60,18 +60,18 @@ Set 5: Diffie-Hellman and friends
 
 33. [x] [Implement Diffie-Hellman](m33.py)
 34. [x] [Implement a MITM key-fixing attack on Diffie-Hellman with parameter injection](m34.py)
-35. [x] [Implement DH with negotiated groups, and break with malicious "g" parameters](m35.py)
+35. [x] [Implement DH with negotiated groups, and break with malicious _g_ parameters](m35.py)
 36. [x] [Implement Secure Remote Password (SRP)](m36.py)
 37. [ ] Break SRP with a zero key
 38. [ ] Offline dictionary attack on simplified SRP
 39. [ ] Implement RSA
-40. [ ] Implement an E=3 RSA Broadcast attack
+40. [ ] Implement an _E_ = 3 RSA Broadcast attack
 
 Set 6: RSA and DSA
 ------------------
 
 41. [ ] Implement unpadded message recovery oracle
-42. [ ] Bleichenbacher's e=3 RSA Attack
+42. [ ] Bleichenbacher's _e_ = 3 RSA Attack
 43. [ ] DSA key recovery from nonce
 44. [ ] DSA nonce recovery from repeated nonce
 45. [ ] DSA parameter tampering

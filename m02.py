@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-# Fixed XOR -- "hit the bull's eye, the kid don't play"
+"""Fixed XOR"""
+# "hit the bull's eye, the kid don't play"
 
-from binascii import hexlify
-
-def fixed_xor(a, b):
+def fixed_xor(a: bytes, b: bytes) -> bytes:
     d = bytearray()
     for i, j in zip(a, b):
         d.append(i ^ j)
     return bytes(d)
 
-if __name__ == "__main__":
-    f = open("data/02.txt", "r").read().splitlines()
-    a, b = f[0], f[1]
-    
+def main() -> None:
+    with open("data/02.txt", "r") as f:
+        f_list = f.read().splitlines()
+        a, b = f_list[0], f_list[1]
+
     a_bytes = bytes.fromhex(a)
     b_bytes = bytes.fromhex(b)
-
-    xor = hexlify(fixed_xor(a_bytes, b_bytes)).decode()
-    
+    xor = fixed_xor(a_bytes, b_bytes).hex()
     print(xor)
 
+if __name__ == "__main__":
+    main()

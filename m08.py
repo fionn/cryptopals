@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-# Detect AES in ECB mode
+"""Detect AES in ECB mode"""
 
-from binascii import hexlify
+from typing import Optional, List
 
-def ecb_score(cyphertext, k):
+def ecb_score(cyphertext: bytes, k: int) -> int:
     duplicates = 0
     blocks = [cyphertext[i:i + k] for i in range(0, len(cyphertext), k)]
-    for i in range(0, len(blocks)):
+    for i in range(0, len(blocks)):  # pylint: disable=consider-using-enumerate
         for j in range(i + 1, len(blocks)):
             if blocks[i] == blocks[j]:
                 duplicates += 1
     return duplicates
 
-def detect_ecb(candidates, blocksize):
+def detect_ecb(candidates: List[bytes], blocksize: int) -> Optional[bytes]:
     ecb_candidate = None
     bound = 0
     for cyphertext in candidates:
@@ -21,15 +21,17 @@ def detect_ecb(candidates, blocksize):
             ecb_candidate = cyphertext
     return ecb_candidate
 
-if __name__ == "__main__":
-    f = open("data/08.txt", "r").read().splitlines()
-    f = [bytes.fromhex(cyphertext) for cyphertext in f]
+def main() -> None:
+    with open("data/08.txt", "r") as f:
+        data = [bytes.fromhex(ct) for ct in f.read().splitlines()]
 
     blocksize = 16
+    ecb_encrypted = detect_ecb(data, blocksize)
 
-    ecb_encrypted = detect_ecb(f, blocksize)
-    index = f.index(ecb_encrypted)
-   
-    print("element", str(index) + ":")
-    print(hexlify(ecb_encrypted).decode())
+    if ecb_encrypted:
+        index = data.index(ecb_encrypted)
+        print("element", str(index) + ":")
+        print(ecb_encrypted.hex())
 
+if __name__ == "__main__":
+    main()

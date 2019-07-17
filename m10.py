@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-# Implement CBC mode
+"""Implement CBC mode"""
 
 from base64 import b64decode
+
 from Crypto.Cipher import AES
+
 from m02 import fixed_xor
 from m09 import de_pkcs7
 
-def encrypt_aes_cbc(plaintext, key, iv):
+def encrypt_aes_cbc(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
     cypher = AES.new(key, AES.MODE_ECB)
-    blocks = [plaintext[i:i + len(key)] for i in range(0, len(plaintext), len(key))]
+    blocks = [plaintext[i:i + len(key)]
+              for i in range(0, len(plaintext), len(key))]
 
     vector = iv
-    cyphertext = b''
+    cyphertext = b""
     for block in blocks:
         block = fixed_xor(block, vector)
         block = cypher.encrypt(block)
@@ -20,12 +23,13 @@ def encrypt_aes_cbc(plaintext, key, iv):
 
     return cyphertext
 
-def decrypt_aes_cbc(cyphertext, key, iv):
+def decrypt_aes_cbc(cyphertext: bytes, key: bytes, iv: bytes) -> bytes:
     cypher = AES.new(key, AES.MODE_ECB)
-    blocks = [cyphertext[i:i + len(key)] for i in range(0, len(cyphertext), len(key))]
+    blocks = [cyphertext[i:i + len(key)]
+              for i in range(0, len(cyphertext), len(key))]
 
     vector = iv
-    plaintext = b''
+    plaintext = b""
     for aesblock in blocks:
         block = cypher.decrypt(aesblock)
         plaintext += fixed_xor(block, vector)
@@ -33,12 +37,15 @@ def decrypt_aes_cbc(cyphertext, key, iv):
 
     return plaintext
 
-if __name__ == "__main__":
-    cyphertext = b64decode(open("data/10.txt", "r").read())
-    
-    key = bytes("YELLOW SUBMARINE", "utf8")
+def main() -> None:
+    with open("data/10.txt", "r") as data:
+        cyphertext = b64decode(data.read())
+
+    key = b"YELLOW SUBMARINE"
     iv = bytes(len(key))
 
     plaintext = de_pkcs7(decrypt_aes_cbc(cyphertext, key, iv))
     print(plaintext.decode())
 
+if __name__ == "__main__":
+    main()

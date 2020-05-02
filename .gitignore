@@ -1,5 +1,4 @@
 *.swp
-.pylintrc
 tags
 venv/
 coverage/

@@ -1,0 +1,24 @@
+name: CI
+
+on: push
+
+jobs:
+  test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        pip install --progress-bar off -r requirements.txt
+        pip install --progress-bar off -r requirements_dev.txt
+    - name: Lint
+      run: make lint
+    - name: Typecheck
+      run: make typecheck
+    - name: Test
+      run: python -m unittest -v --locals

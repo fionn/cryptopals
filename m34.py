@@ -92,7 +92,7 @@ def dh_parameter_injection(p: int, g: int, message: bytes) -> bytes:
 
     intercepted_set = set(intercepted)
     if len(intercepted_set) != 1:
-        raise RuntimeError(f"Messages are not identical")
+        raise RuntimeError("Messages are not identical")
     return intercepted_set.pop()
 
 def main() -> None:

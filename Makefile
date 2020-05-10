@@ -2,7 +2,6 @@ MAKEFLAGS = --warn-undefined-variables
 
 SRC = m??.py
 TEST = test.py
-VENV ?= venv
 
 venv: requirements.txt requirements_dev.txt
 	@python3 -m venv $@ --prompt $@::crypto
@@ -10,8 +9,8 @@ venv: requirements.txt requirements_dev.txt
 	@echo "enter virtual environment: source $@/bin/activate"
 
 .PHONY: outdated
-outdated: $(VENV)
-	@source $(VENV)/bin/activate && pip list --outdated
+outdated: venv
+	@source $</bin/activate && pip list --$@
 
 .PHONY: uml
 uml: packages.svg
@@ -19,7 +18,7 @@ uml: packages.svg
 packages.svg: $(SRC)
 	@pyreverse $(SRC) -o svg
 	@rm classes.svg
-	@sed -i "s/Times,serif/Inconsolata, DejaVu Sans Mono, monospace/g" packages.svg
+	@sed -i "s/Times,serif/Inconsolata, DejaVu Sans Mono, monospace/g" $@
 
 .PHONY: umlpdf
 umlpdf: packages.pdf

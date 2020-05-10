@@ -4,6 +4,7 @@
 from Crypto.Random.random import getrandbits
 
 from m09 import pkcs7
+from m16 import cbc_bitflip as ctr_bitflip
 from m18 import aes_ctr
 
 RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
@@ -18,12 +19,6 @@ def oracle(userdata: bytes) -> bytes:
 def is_admin(cyphertext: bytes) -> bool:
     plaintext = aes_ctr(cyphertext, RANDOM_KEY)
     return "admin=true" in plaintext.decode(errors="replace")
-
-def ctr_bitflip(cyphertext: bytes) -> bytes:
-    cyphertext_array = bytearray(cyphertext)
-    cyphertext_array[37] ^= 1
-    cyphertext_array[43] ^= 1
-    return bytes(cyphertext_array)
 
 def main() -> None:
     plaintext = bytes(5) + b":admin<true"

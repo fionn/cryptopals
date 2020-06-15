@@ -36,6 +36,7 @@ import m33
 import m34
 import m35
 import m36
+import m37
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -692,14 +693,35 @@ class Test36(unittest.TestCase):
         steve.A = 123
         steve.gen_K()
         response = steve.receive_hmac("deadbeef")
-        self.assertEqual(response, 500)
+        self.assertFalse(response)
 
     def test_m36_srp_protocol(self) -> None:
         """SRP protocol server verification"""
         carol = m36.Client(m36.PRIME, email="not@real.email", password="submarines")
         steve = m36.Server()
         result = m36.srp_protocol(carol, steve)
-        self.assertEqual(result, 200)
+        self.assertTrue(result)
+
+class Test37(unittest.TestCase):
+
+    def test_m37_srp_zero_key(self) -> None:
+        """Break SRP with a zero key"""
+        carol = m37.CustomKeyClient(m36.PRIME, email="not@real.email",
+                                    password="submarines")
+        steve = m36.Server()
+        carol.A = 0
+        result = m36.srp_protocol(carol, steve)
+        self.assertTrue(result)
+
+    def test_m37_srp_multiple_prime_key(self) -> None:
+        """Break SRP with a zero key"""
+        for i in range(1, 4):
+            carol = m37.CustomKeyClient(m36.PRIME, email="not@real.email",
+                                        password="submarines")
+            steve = m36.Server()
+            carol.A = i * m36.PRIME
+            result = m36.srp_protocol(carol, steve)
+            self.assertTrue(result)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -126,10 +126,8 @@ class Server(SRPPeer):  # pylint: disable=too-many-instance-attributes
         S = pow(self.A * pow(self._v, self._u, self.N), self._b, self.N)
         self._K = sha256(bytes(str(S), "ascii"))
 
-    def receive_hmac(self, peer_hmac: str) -> int:
-        if hmac.compare_digest(self.hmac(), peer_hmac):
-            return 200
-        return 500
+    def receive_hmac(self, peer_hmac: str) -> bool:
+        return hmac.compare_digest(self.hmac(), peer_hmac)
 
 def srp_protocol(client: Client, server: Server) -> int:
     parameters = client.negotiate_send()

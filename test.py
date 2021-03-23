@@ -3,8 +3,9 @@
 import gc
 import hmac
 import base64
+import hashlib
 import unittest
-from hashlib import sha1
+from unittest import mock
 
 from Crypto.Hash import MD4
 from Crypto.Cipher import AES
@@ -37,6 +38,7 @@ import m34
 import m35
 import m36
 import m37
+import m38
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -300,7 +302,7 @@ class Test28(unittest.TestCase):
     def test_m28_sha1(self) -> None:
         """SHA1 matches hashlib.sha1"""
         m = b"digest me" * 512
-        h = sha1(m).hexdigest()
+        h = hashlib.sha1(m).hexdigest()
         h_prime = m28.SHA1().new(m).hexdigest()
         self.assertEqual(h, h_prime)
 
@@ -328,7 +330,7 @@ class Test28(unittest.TestCase):
         """SHA1 of variable message length matches hashlib.sha1"""
         for i in range(513):
             m = bytes(i)
-            h = sha1(m).hexdigest()
+            h = hashlib.sha1(m).hexdigest()
             h_prime = m28.SHA1().new(m).hexdigest()
             self.assertEqual(h, h_prime)
 
@@ -336,7 +338,7 @@ class Test28(unittest.TestCase):
         """sha1_mac matches hashlib.sha1"""
         m = b"digest me" * 512
         k = b"it is authentic"
-        h = sha1(k + m).hexdigest()
+        h = hashlib.sha1(k + m).hexdigest()
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
@@ -344,7 +346,7 @@ class Test28(unittest.TestCase):
         """sha1_mac with empty message matches hashlib.sha1"""
         m = b""
         k = b"it is authentic"
-        h = sha1(k + m).hexdigest()
+        h = hashlib.sha1(k + m).hexdigest()
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
@@ -352,14 +354,14 @@ class Test28(unittest.TestCase):
         """sha1_mac with empty key matches hashlib.sha1"""
         m = b"not very authenticated"
         k = b""
-        h = sha1(k + m).hexdigest()
+        h = hashlib.sha1(k + m).hexdigest()
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
     def test_m28_sha1_mac_empty_message_and_key(self) -> None:
         """sha1_mac with empty message and key matches hashlib.sha1"""
         m, k = b"", b""
-        h = sha1(k + m).hexdigest()
+        h = hashlib.sha1(k + m).hexdigest()
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
@@ -386,7 +388,7 @@ class Test28(unittest.TestCase):
         h.update(m2)
         h_combined = m28.SHA1().new(m1 + m2)
         self.assertEqual(h.hexdigest(), h_combined.hexdigest())
-        self.assertEqual(h.hexdigest(), sha1(m1 + m2).hexdigest())
+        self.assertEqual(h.hexdigest(), hashlib.sha1(m1 + m2).hexdigest())
 
     def test_m28_sha1_initialisation(self) -> None:
         """SHA1 initialises correctly"""
@@ -553,7 +555,7 @@ class Test31(unittest.TestCase):
         k = KEY
         m = MESSAGE
         h = m31.hmac_sha1(k, m)
-        h_prime = hmac.new(k, m, sha1)
+        h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
     def test_m31_hmac_sha1_large_key(self) -> None:
@@ -561,7 +563,7 @@ class Test31(unittest.TestCase):
         k = 128 * KEY
         m = MESSAGE
         h = m31.hmac_sha1(k, m)
-        h_prime = hmac.new(k, m, sha1)
+        h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
     def test_m31_hmac_sha1_equal_sized_key(self) -> None:
@@ -569,7 +571,7 @@ class Test31(unittest.TestCase):
         k = bytes(64)
         m = MESSAGE
         h = m31.hmac_sha1(k, m)
-        h_prime = hmac.new(k, m, sha1)
+        h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
     def test_m31_insecure_compare_identical(self) -> None:
@@ -724,6 +726,45 @@ class Test37(unittest.TestCase):
             carol.A = i * prime
             result = m36.srp_protocol(carol, steve)
             self.assertTrue(result)
+
+class Test38(unittest.TestCase):
+
+    def test_m38_simple_srp(self) -> None:
+        """Implement simple SRP"""
+        client = m38.SimpleClient(PRIME, G,
+                                  username="srp-client@cryptopals.com",
+                                  password="yolo")
+        server = m38.SimpleServer(PRIME, G)
+        self.assertTrue(m38.simple_srp(client, server))
+
+    @unittest.skip("Requires a wordlist file")
+    def test_m38_mitm_simple_srp(self) -> None:
+        """Crack simple SRP (with wordlist file)"""
+        prime = m36.prime()
+        password = "aardvark"
+        client = m38.SimpleClient(prime, G,
+                                  username="srp-client@cryptopals.com",
+                                  password=password)
+        evil_server = m38.EvilServer(prime, G)
+
+        candidate_password = m38.mitm_simple_srp(client, evil_server)
+        self.assertEqual(candidate_password, password)
+
+    @mock.patch.object(m38.EvilServer, "_words")
+    def test_m38_mitm_simple_srp_no_io(self, _words: mock.Mock) -> None:
+        """Crack simple SRP"""
+        prime = m36.prime()
+
+        password = "aardvark"
+        _words.return_value = [password]
+
+        client = m38.SimpleClient(prime, G,
+                                  username="srp-client@cryptopals.com",
+                                  password=password)
+        evil_server = m38.EvilServer(prime, G)
+
+        candidate_password = m38.mitm_simple_srp(client, evil_server)
+        self.assertEqual(candidate_password, password)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

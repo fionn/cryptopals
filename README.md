@@ -63,7 +63,7 @@ Set 5: Diffie-Hellman and friends
 35. [x] [Implement DH with negotiated groups, and break with malicious _g_ parameters](m35.py)
 36. [x] [Implement Secure Remote Password (SRP)](m36.py)
 37. [x] [Break SRP with a zero key](m37.py)
-38. [ ] Offline dictionary attack on simplified SRP
+38. [x] [Offline dictionary attack on simplified SRP](m38.py)
 39. [ ] Implement RSA
 40. [ ] Implement an _E_ = 3 RSA Broadcast attack
 

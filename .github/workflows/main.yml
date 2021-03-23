@@ -17,10 +17,16 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: |
         pip install --progress-bar off -r requirements.txt
         pip install --progress-bar off -r requirements_dev.txt
+
+    # cracklib provides the wordlist used in m38, but we skip this dependency
+    # because we also skip the test that requires it.
+    - name: Install system dependencies
+      run: sudo apt-get -y install cracklib-runtime
+      if: false
 
     - name: Lint
       run: make lint

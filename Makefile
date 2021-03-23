@@ -3,6 +3,8 @@ MAKEFLAGS = --warn-undefined-variables
 SRC = m??.py
 TEST = test.py
 
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+
 venv: requirements.txt requirements_dev.txt
 	@python3 -m venv $@ --prompt $@::crypto
 	@source $@/bin/activate && pip install -r $< -r requirements_dev.txt

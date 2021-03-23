@@ -3,16 +3,24 @@
 
 import hmac
 import hashlib
-from hashlib import sha256
 from abc import ABC, abstractmethod
 from typing import Union, Dict
 
 from Crypto.Random.random import randrange
 
-with open("data/33.txt", "r") as prime_file:
-    PRIME = int(prime_file.read().replace("\n", ""), 16)
+def prime() -> int:
+    with open("data/33.txt", "r") as prime_file:
+        return int(prime_file.read().replace("\n", ""), 16)
 
-class SRPPeer(ABC):  # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-few-public-methods
+class IntegerHasher:
+
+    @staticmethod
+    def _integer_hash(a: Union[str, int], b: Union[str, int]) -> int:
+        return int(hashlib.sha256((str(a) + str(b)).encode("ascii")).hexdigest(), 16)
+
+# pylint: disable=too-many-instance-attributes
+class SRPPeer(ABC, IntegerHasher):
 
     def __init__(self) -> None:
         self.N: int = None
@@ -35,24 +43,22 @@ class SRPPeer(ABC):  # pylint: disable=too-many-instance-attributes
     def gen_K(self) -> None:
         pass
 
-    @staticmethod
-    def _integer_hash(a: Union[str, int], b: Union[str, int]) -> int:
-        return int(sha256((str(a) + str(b)).encode("ascii")).hexdigest(), 16)
-
     def scrambler(self) -> None:
         self._u = self._integer_hash(self.A, self.B)
 
     def hmac(self) -> str:
         return hmac.new(self._K.digest(),
-                        str(self.salt).encode("ascii"), sha256).hexdigest()
+                        str(self.salt).encode("ascii"),
+                        hashlib.sha256).hexdigest()
 
-class Client(SRPPeer):  # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
+class Client(SRPPeer):
 
     # pylint: disable=too-many-arguments
-    def __init__(self, prime: int = None, email: str = None,
+    def __init__(self, p: int = None, email: str = None,
                  password: str = None, g: int = 2, k: int = 3) -> None:
         super().__init__()
-        self.N = prime
+        self.N = p
         self.g = g
         self.k = k
         self.I = email
@@ -71,8 +77,7 @@ class Client(SRPPeer):  # pylint: disable=too-many-instance-attributes
                 "g": self.g,
                 "k": self.k,
                 "I": self.I,
-                "p": self.P
-               }
+                "p": self.P}
 
     def send_email_pubkey(self) -> Dict[str, Union[str, int]]:
         return {"I": self.I, "pubkey": self.pubkey()}
@@ -85,9 +90,10 @@ class Client(SRPPeer):  # pylint: disable=too-many-instance-attributes
         x = self._integer_hash(self.salt, self.P)
         S = pow(self.B - self.k * pow(self.g, x, self.N),
                 self._a + self._u * x, self.N)
-        self._K = sha256(str(S).encode("ascii"))
+        self._K = hashlib.sha256(str(S).encode("ascii"))
 
-class Server(SRPPeer):  # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
+class Server(SRPPeer):
 
     def __init__(self) -> None:
         super().__init__()
@@ -124,7 +130,7 @@ class Server(SRPPeer):  # pylint: disable=too-many-instance-attributes
 
     def gen_K(self) -> None:
         S = pow(self.A * pow(self._v, self._u, self.N), self._b, self.N)
-        self._K = sha256(bytes(str(S), "ascii"))
+        self._K = hashlib.sha256(bytes(str(S), "ascii"))
 
     def receive_hmac(self, peer_hmac: str) -> bool:
         return hmac.compare_digest(self.hmac(), peer_hmac)
@@ -151,7 +157,9 @@ def srp_protocol(client: Client, server: Server) -> int:
     return server.receive_hmac(hmac_c)
 
 def main() -> None:
-    carol = Client(PRIME, email="not@real.email", password="submarines")
+    p = prime()
+
+    carol = Client(p, email="not@real.email", password="submarines")
     steve = Server()
 
     response = srp_protocol(carol, steve)

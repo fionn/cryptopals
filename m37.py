@@ -11,7 +11,7 @@ class CustomKeyClient(m36.Client):
         self._K = sha256(bytes(str(self.A % self.N), "ascii"))
 
 def main() -> None:
-    prime = m36.PRIME
+    prime = m36.prime()
 
     for coefficient in range(3):
         carol = CustomKeyClient(prime, email="not@real.email",

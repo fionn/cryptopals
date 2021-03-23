@@ -141,7 +141,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
             self.p = packet.get("p", self.p)
             self.g = packet.get("g", self.g)
             peer_pubkey = packet.get("pubkey", None)
-            if "name" and "address" in packet:
+            if {"name", "address"} <= set(packet):
                 self._receive_connection(packet, raw_packet.origin)
             if peer_pubkey is not None and self._peer.pubkey is None:
                 self._peer = self._peer._replace(pubkey=packet["pubkey"])
@@ -240,10 +240,10 @@ class DHMaliciousSocket(DHSocket):
         raw_packet = self._get_buffer()
         try:
             packet = json.loads(raw_packet.data.decode("ascii"))
-            if peer_address is not None and "name" and "address" in packet:
+            if peer_address is not None and {"name", "address"} <= set(packet):
                 self._mitm_connection(peer_name, peer_address, packet,
                                       raw_packet.origin)
-            if "p" and "g" in packet:
+            if {"p", "g"} <= set(packet):
                 self._mitm_parameters(peer_name, packet)
             elif "pubkey" in packet:
                 sender = self._peers[raw_packet.origin]

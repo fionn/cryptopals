@@ -39,6 +39,7 @@ import m35
 import m36
 import m37
 import m38
+import m39
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -765,6 +766,51 @@ class Test38(unittest.TestCase):
 
         candidate_password = m38.mitm_simple_srp(client, evil_server)
         self.assertEqual(candidate_password, password)
+
+class Test39(unittest.TestCase):
+
+    def test_m39_modular_inverse(self) -> None:
+        """Calculate modular inverse"""
+        self.assertEqual(m39.invmod(3, 7), 5)
+        self.assertEqual(m39.invmod(17, 3120), 2753)
+        self.assertEqual(m39.invmod(17, 3120), pow(17, -1, 3120))
+
+    def test_m39_modular_inverse_does_not_exist(self) -> None:
+        """Calculate modular inverse when it doesn't exist"""
+        with self.assertRaises(ValueError):
+            m39.invmod(3, 3)
+
+    def test_m39_keygen_size(self) -> None:
+        """Sanity check keypair for bit size and modulus"""
+        size = 128
+        public, private = m39.keygen(size)
+        self.assertAlmostEqual(size, public.modulus.bit_length(), delta=1)
+        self.assertEqual(size, public.modulus.bit_length())
+        self.assertEqual(public.modulus, private.modulus)
+
+    def test_m39_integer_encryption(self) -> None:
+        """RSA encryption and decryption of integer data"""
+        public, private = m39.keygen(128)
+        m = 42
+        c = m39.encrypt_int(m, public)
+        m_prime = m39.decrypt_int(c, private)
+        self.assertEqual(m, m_prime)
+
+    def test_m39_binary_encryption(self) -> None:
+        """RSA encryption and decryption of binary data"""
+        public, private = m39.keygen(128)
+        m = MESSAGE
+        c = m39.encrypt(m, public)
+        m_prime = m39.decrypt(c, private)
+        self.assertEqual(m, m_prime)
+
+    def test_m39_small_modulus(self) -> None:
+        """RSA encryption fails with small modulus"""
+        size = 128
+        public, _ = m39.keygen(size)
+        m = 2 ** size
+        with self.assertRaises(ValueError):
+            m39.encrypt_int(m, public)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

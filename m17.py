@@ -3,7 +3,7 @@
 
 from base64 import b64decode
 
-from Crypto.Random.random import getrandbits, randint
+from Crypto.Random.random import getrandbits, choice
 
 from m09 import pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
@@ -12,13 +12,13 @@ from m15 import de_pkcs7
 RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
 IV = bytes(getrandbits(8) for i in range(16))
 
-def chose_plaintext() -> bytes:
+def choose_plaintext() -> bytes:
     with open("data/17.txt", "r") as f:
         data = f.read().splitlines()
-    return pkcs7(b64decode(data[randint(0, len(data) - 1)]))
+    return pkcs7(b64decode(choice(data)))  # type: ignore
 
 def cbc_oracle() -> bytes:
-    plaintext = chose_plaintext()
+    plaintext = choose_plaintext()
     return encrypt_aes_cbc(plaintext, RANDOM_KEY, IV)
 
 def padding_oracle(cyphertext: bytes) -> bool:

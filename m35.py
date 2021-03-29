@@ -201,7 +201,9 @@ class DHMaliciousSocket(DHSocket):
         try:
             peer.socket.connect(peer.address)
         except OSError as e:
-            if e.errno != 106:  # Transport endpoint is already connected.
+            # Transport endpoint is already connected, or
+            # socket is already connected
+            if e.errno not in {106, 56}:
                 raise e
         super()._send(data, peer)
 

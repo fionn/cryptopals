@@ -2,6 +2,7 @@
 
 import gc
 import hmac
+import time
 import base64
 import hashlib
 import unittest
@@ -23,14 +24,21 @@ import m09
 import m10
 import m11
 import m12
+import m13
+import m14
 import m15
 import m16
+import m17
 import m18
 import m21
+import m22
 import m23
 import m24
+import m25
 import m26
+import m27
 import m28
+import m29
 import m30
 import m31
 import m33
@@ -206,6 +214,22 @@ class Test12(unittest.TestCase):
         self.assertEqual(m12.break_ecb(m12.oracle).split(b"\n")[0],
                          b"Rollin' in my 5.0")
 
+class Test13(unittest.TestCase):
+
+    def test_m13_end_to_end(self) -> None:
+        """ECB cut-and-paste"""
+        email = "fake@mail.com"
+        admin_cookie = m13.rewrite_cookie(email)
+        profile = m13.decrypt_oracle(admin_cookie)
+        self.assertEqual(profile["email"], email)
+        self.assertEqual(profile["role"], "admin")
+
+class Test14(unittest.TestCase):
+
+    def test_m14_end_to_end(self) -> None:
+        """Byte-at-a-time ECB decryption (harder)"""
+        self.assertTrue(m14.break_ecb(m14.oracle))
+
 class Test15(unittest.TestCase):
 
     def test_m15_equal_pkcs7_padding(self) -> None:
@@ -235,6 +259,14 @@ class Test16(unittest.TestCase):
         cyphertext = m16.cbc_bitflip(cyphertext)
         self.assertTrue(m16.is_admin(cyphertext))
 
+class Test17(unittest.TestCase):
+
+    def test_m17_end_to_end(self) -> None:
+        """The CBC padding oracle"""
+        c = m17.cbc_oracle()
+        m = m17.attack(c)
+        self.assertTrue(m)
+
 class Test18(unittest.TestCase):
 
     def test_m18_aes_ctr(self) -> None:
@@ -258,6 +290,23 @@ class Test21(unittest.TestCase):
         # https://oeis.org/A221557
         mt = m21.MT19937(5489)
         self.assertEqual(mt.random(), 3499211612)
+
+class Test22(unittest.TestCase):
+
+    @unittest.skip("Extremely long test")
+    def test_m22_end_to_end(self) -> None:
+        """Crack an MT19937 seed"""
+        r = m22.sleep_mersenne()
+        seed = m22.crack_seed(r)
+        clone = m21.MT19937(seed)
+        self.assertEqual(clone.random(), r)
+
+    def test_m22_crack_artificial_seed(self) -> None:
+        """Crack an artificial MT19937 seed"""
+        seed = int(time.time())
+        r = m21.MT19937(seed).random()
+        seed_candidate = m22.crack_seed(r)
+        self.assertEqual(seed, seed_candidate)
 
 class Test23(unittest.TestCase):
 
@@ -289,6 +338,14 @@ class Test24(unittest.TestCase):
         seed = m24.crack_mt19937(cyphertext)
         self.assertEqual(seed, 1)
 
+class Test25(unittest.TestCase):
+
+    def test_m25_end_to_end(self) -> None:
+        """Break "random access read/write" AES CTR"""
+        c = m18.aes_ctr(MESSAGE, m25.RANDOM_KEY)
+        m_prime = m25.break_rarw(c)
+        self.assertEqual(MESSAGE, m_prime)
+
 class Test26(unittest.TestCase):
 
     def test_m26_ctr_bitflipping(self) -> None:
@@ -297,6 +354,14 @@ class Test26(unittest.TestCase):
         cyphertext = m26.oracle(plaintext)
         cyphertext = m26.ctr_bitflip(cyphertext)
         self.assertTrue(m26.is_admin(cyphertext))
+
+class Test27(unittest.TestCase):
+
+    def test_m27_end_to_end(self) -> None:
+        """Recover the key from CBC with IV = Key"""
+        c = m27.bad_cbc_encryption(MESSAGE * 3)
+        k = m27.cbc_iv_key(c)
+        self.assertEqual(k, m27.RANDOM_KEY)
 
 class Test28(unittest.TestCase):
 
@@ -407,6 +472,25 @@ class Test28(unittest.TestCase):
         h = m28.SHA1(MESSAGE)
         h_prime = h.copy()
         self.assertEqual(h.digest(), h_prime.digest())
+
+class Test29(unittest.TestCase):
+
+    def test_m29_end_to_end(self) -> None:
+        """Break a SHA-1 keyed MAC using length extension"""
+        m = b"comment1=cooking%20MCs;userdata=foo;" \
+            b"comment2=%20like%20a%20pound%20of%20bacon"
+        k = bytes(getrandbits(8) for _ in range(randint(0, 50)))
+        z = b";admin=true"
+
+        # server-side
+        d = m28.sha1_mac(m, k)
+        m_prime = m + bytearray(m29.md_padding(k + m)) + z
+
+        # client-side
+        for q in m29.extend_sha1(d, z):
+            if m29.verify_sha1_mac(q, m_prime, k):
+                return
+        self.fail("No extended HMAC validated")
 
 class Test30(unittest.TestCase):
 
@@ -813,4 +897,4 @@ class Test39(unittest.TestCase):
             m39.encrypt_int(m, public)
 
 if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=2, buffer=True)

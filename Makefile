@@ -14,16 +14,10 @@ venv: requirements.txt requirements_dev.txt
 outdated: venv
 	@source $</bin/activate && pip list --$@
 
-.PHONY: uml
-uml: packages.svg
-
 packages.svg: $(SRC)
 	@pyreverse $(SRC) -o svg
 	@rm classes.svg
 	@sed -i "s/Times,serif/Inconsolata, DejaVu Sans Mono, monospace/g" $@
-
-.PHONY: umlpdf
-umlpdf: packages.pdf
 
 packages.pdf: $(SRC)
 	@pyreverse $(SRC)
@@ -38,7 +32,7 @@ tags: $(SRC) $(TEST)
 
 .PHONY: test
 test:
-	@python -m unittest
+	@python -m unittest --buffer
 
 coverage: $(SRC) $(TEST)
 	@coverage run --branch --concurrency=thread --omit=venv/* test.py

@@ -8,7 +8,7 @@ from Crypto.Util.number import getPrime as get_prime
 SMALL_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
                 31, 37, 41, 43, 47, 53, 59, 61, 67, 71]
 
-RSAKey= NamedTuple("RSAKey", [("base", int), ("modulus", int)])
+RSAKey = NamedTuple("RSAKey", [("base", int), ("modulus", int)])
 
 RSAKeyPair = NamedTuple("RSAKeyPair",
                         [("public", RSAKey), ("private", RSAKey)])

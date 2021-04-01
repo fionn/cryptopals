@@ -3,6 +3,7 @@
 import gc
 import hmac
 import time
+import math
 import base64
 import hashlib
 import unittest
@@ -853,6 +854,20 @@ class Test38(unittest.TestCase):
 
 class Test39(unittest.TestCase):
 
+    def test_m39_gcd(self) -> None:
+        """Sanity check Euclidean GCD"""
+        interval = range(-10, 10)
+        for a in interval:
+            for b in interval:
+                self.assertEqual(m39.gcd(a, b), math.gcd(a, b))
+
+    def test_m39_lcm(self) -> None:
+        """Sanity check LCM"""
+        interval = range(-10, 10)
+        for a in interval:
+            for b in interval:
+                self.assertEqual(m39.lcm(a, b), math.lcm(a, b))
+
     def test_m39_modular_inverse(self) -> None:
         """Calculate modular inverse"""
         self.assertEqual(m39.invmod(3, 7), 5)
@@ -866,11 +881,13 @@ class Test39(unittest.TestCase):
 
     def test_m39_keygen_size(self) -> None:
         """Sanity check keypair for bit size and modulus"""
+        e = 3
         size = 128
-        public, private = m39.keygen(size)
-        self.assertAlmostEqual(size, public.modulus.bit_length(), delta=1)
+        public, private = m39.keygen(size, e)
         self.assertEqual(size, public.modulus.bit_length())
         self.assertEqual(public.modulus, private.modulus)
+        self.assertEqual(public.exponent, e)
+        self.assertGreater(private.exponent, e)
 
     def test_m39_integer_encryption(self) -> None:
         """RSA encryption and decryption of integer data"""

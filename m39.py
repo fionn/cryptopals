@@ -8,7 +8,7 @@ from Crypto.Util.number import getPrime as get_prime
 SMALL_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
                 31, 37, 41, 43, 47, 53, 59, 61, 67, 71]
 
-RSAKey = NamedTuple("RSAKey", [("base", int), ("modulus", int)])
+RSAKey = NamedTuple("RSAKey", [("exponent", int), ("modulus", int)])
 
 RSAKeyPair = NamedTuple("RSAKeyPair",
                         [("public", RSAKey), ("private", RSAKey)])
@@ -17,11 +17,14 @@ def gcd(a: int, b: int) -> int:
     """Euclidean GCD"""
     while b != 0:
         a, b = b, a % b
-    return a
+    return abs(a)
 
 def lcm(a: int, b: int) -> int:
     """LCM using Euclidean GCD"""
-    return a // gcd(a, b) * b
+    try:
+        return abs(a // gcd(a, b) * b)
+    except ZeroDivisionError:
+        return 0
 
 def invmod(a: int, n: int) -> int:
     """Modular multiplicative inverse via xGCD"""
@@ -45,17 +48,17 @@ def keygen(size: int = 1024, e: int = 3) -> RSAKeyPair:
     """Generate RSA public and private key pair"""
     # e, phi(n) must be coprime for unique decryption.
     # n might be one bit short if both primes are on the small side.
-    phi, n = 0, 0
-    while gcd(e, phi) != 1 or n.bit_length() != size:
+    n, phi_n = 0, 0
+    while gcd(e, phi_n) != 1 or n.bit_length() != size:
         # We don't choose strong primes here, just normal ones.
         # Different sizes to guarantee distinct values and make factoring harder.
         p, q = get_prime(size // 2 - 1), get_prime(size // 2 + 1)
-        phi = lcm(p - 1, q - 1)  # Carmichael's totient function
+        phi_n = lcm(p - 1, q - 1)  # Carmichael's totient function
         n = p * q
 
-    d = invmod(e, phi)
+    d = invmod(e, phi_n)
 
-    assert gcd(d, phi) == 1
+    assert gcd(d, phi_n) == 1
     return RSAKeyPair(public=RSAKey(e, n), private=RSAKey(d, n))
 
 def encrypt_int(m: int, public_key: RSAKey) -> int:

@@ -65,7 +65,7 @@ Set 5: Diffie-Hellman and friends
 37. [x] [Break SRP with a zero key](m37.py)
 38. [x] [Offline dictionary attack on simplified SRP](m38.py)
 39. [x] [Implement RSA](m39.py)
-40. [ ] Implement an _E_ = 3 RSA Broadcast attack
+40. [x] [Implement an _e_ = 3 RSA broadcast attack](m40.py)
 
 Set 6: RSA and DSA
 ------------------

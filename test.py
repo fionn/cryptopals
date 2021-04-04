@@ -49,6 +49,7 @@ import m36
 import m37
 import m38
 import m39
+import m40
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -912,6 +913,49 @@ class Test39(unittest.TestCase):
         m = 2 ** size
         with self.assertRaises(ValueError):
             m39.encrypt_int(m, public)
+
+class Test40(unittest.TestCase):
+
+    def test_m40_integer_root(self) -> None:
+        """Find the integer nth root"""
+        x = 4
+        e = 6
+        self.assertEqual(m40.integer_root(x ** e, e), x)
+
+    def test_m40_integer_root_of_zero(self) -> None:
+        """Calculate the integer square root of 0"""
+        self.assertEqual(m40.integer_root(0, 2), 0)
+
+    def test_m40_zeroth_root(self) -> None:
+        """Calculate the 0th root"""
+        with self.assertRaises(ZeroDivisionError):
+            m40.integer_root(2, 0)
+
+    def test_m40_crt(self) -> None:
+        """Calculate CRT for a simple system"""
+        a = [0, 3, 4]
+        n = [3, 4, 5]
+        self.assertEqual(m40.crt(a, n), 39)
+
+    def test_m40_crt_impossible_system(self) -> None:
+        """Calculate CRT when arguments don't define a system"""
+        a = [0]
+        n = [4, 5]
+        with self.assertRaises(ValueError):
+            m40.crt(a, n)
+
+    def test_m40_broadcast(self) -> None:
+        """Break RSA with Håstad's broadcast attack"""
+        k = []
+        c = []
+        for _ in range(3):
+            k_i, c_i = m40.generate_key_and_encrypt(MESSAGE)
+            k.append(k_i)
+            c.append(c_i)
+
+        m_prime_int = m40.broadcast_attack(k, c)
+        m_prime = m_prime_int.to_bytes((m_prime_int.bit_length() + 7) // 8, "big")
+        self.assertEqual(MESSAGE, m_prime)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

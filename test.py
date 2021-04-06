@@ -50,6 +50,7 @@ import m37
 import m38
 import m39
 import m40
+import m41
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -956,6 +957,24 @@ class Test40(unittest.TestCase):
         m_prime_int = m40.broadcast_attack(k, c)
         m_prime = m_prime_int.to_bytes((m_prime_int.bit_length() + 7) // 8, "big")
         self.assertEqual(MESSAGE, m_prime)
+
+class Test41(unittest.TestCase):
+
+    def test_m41_repeated_decryption(self) -> None:
+        """Try to decrypt multiple times"""
+        server = m41.DecryptionServer(size=512)
+        c = m39.encrypt(MESSAGE, server.public_key)
+        server.decrypt(c)
+        with self.assertRaises(RuntimeError):
+            server.decrypt(c)
+
+    def test_m41_recover_message(self) -> None:
+        """Recover plaintext via transformation"""
+        server = m41.DecryptionServer(size=512)
+        c = m39.encrypt(MESSAGE, server.public_key)
+        server.decrypt(c)
+        m = m41.recover_message(c, server)
+        self.assertEqual(m, MESSAGE)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

@@ -70,7 +70,7 @@ Set 5: Diffie-Hellman and friends
 Set 6: RSA and DSA
 ------------------
 
-41. [ ] Implement unpadded message recovery oracle
+41. [x] [Implement unpadded message recovery oracle](m41.py)
 42. [ ] Bleichenbacher's _e_ = 3 RSA Attack
 43. [ ] DSA key recovery from nonce
 44. [ ] DSA nonce recovery from repeated nonce

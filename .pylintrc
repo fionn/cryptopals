@@ -88,7 +88,8 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         missing-docstring,
-        invalid-name
+        invalid-name,
+        too-many-lines
 enable=c-extension-no-member
 
 

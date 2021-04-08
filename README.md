@@ -71,7 +71,7 @@ Set 6: RSA and DSA
 ------------------
 
 41. [x] [Implement unpadded message recovery oracle](m41.py)
-42. [ ] Bleichenbacher's _e_ = 3 RSA Attack
+42. [x] [Bleichenbacher's _e_ = 3 RSA Attack](m42.py)
 43. [ ] DSA key recovery from nonce
 44. [ ] DSA nonce recovery from repeated nonce
 45. [ ] DSA parameter tampering

@@ -51,6 +51,7 @@ import m38
 import m39
 import m40
 import m41
+import m42
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -974,6 +975,46 @@ class Test41(unittest.TestCase):
         server.decrypt(c)
         m = m41.recover_message(c, server)
         self.assertEqual(m, MESSAGE)
+
+class Test42(unittest.TestCase):
+
+    def test_m42_pkcs1v15_pad(self) -> None:
+        """Pad a message with PKCS#1 v1.5"""
+        eb = m42.pkcs1v15_pad(MESSAGE, 256)
+        self.assertEqual(eb[0], 0)
+        self.assertEqual(eb[1], 1)
+        for element in eb[2:9]:
+            self.assertNotEqual(element, 0)
+        self.assertIn(0, eb[10:])
+
+    def test_m42_pkcs1v15_pad_bad_type(self) -> None:
+        """Pad a message with non-existent block type"""
+        with self.assertRaises(ValueError):
+            m42.pkcs1v15_pad(MESSAGE, 256, block_type=3)
+
+    def test_m42_pkcs1v15_pad_message_too_big(self) -> None:
+        """Pad a message that's too big for the size"""
+        with self.assertRaises(ValueError):
+            m42.pkcs1v15_pad(MESSAGE, 128)
+
+    def test_m42_sign_and_verify(self) -> None:
+        """Sign a message and verify the signature"""
+        keypair = m39.keygen(bits=512)
+        s = m42.sign(MESSAGE, keypair.private)
+        self.assertTrue(m42.verify(MESSAGE, s, keypair.public))
+
+    def test_m42_verify_no_match(self) -> None:
+        """Try to verify an obviously bad signature"""
+        keypair = m39.keygen(bits=512)
+        fake_signature = 123456789012
+        self.assertFalse(m42.verify(MESSAGE, fake_signature, keypair.public))
+
+    def test_m42_forge_signature(self) -> None:
+        """BB'06 via cube root"""
+        m = MESSAGE
+        keypair = m39.keygen(bits=1024)
+        s = m42.forge_signature(m, keypair.public.modulus.bit_length())
+        self.assertTrue(m42.verify(m, s, keypair.public))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

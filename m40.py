@@ -10,7 +10,7 @@ def generate_key_and_encrypt(m: bytes, size: int = 256) -> tuple[m39.RSAKey, int
     return pubkey, m39.encrypt(m, pubkey)
 
 def integer_root(a: int, e: int) -> int:
-    """nth root via Newton-Rhapson method"""
+    """eth root via Newton-Rhapson method"""
     if a == 0 and e != 0:
         return 0
     x_i, x_j = a + 1, a
@@ -52,9 +52,7 @@ def main() -> None:
         k.append(k_i)
         c.append(c_i)
 
-    m_prime_int = broadcast_attack(k, c)
-    m_prime = m_prime_int.to_bytes((m_prime_int.bit_length() + 7) // 8, "big")
-
+    m_prime = m39.to_bytes(broadcast_attack(k, c))
     assert m == m_prime
     print(m_prime.decode())
 

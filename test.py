@@ -954,8 +954,7 @@ class Test40(unittest.TestCase):
             k.append(k_i)
             c.append(c_i)
 
-        m_prime_int = m40.broadcast_attack(k, c)
-        m_prime = m_prime_int.to_bytes((m_prime_int.bit_length() + 7) // 8, "big")
+        m_prime = m39.to_bytes(m40.broadcast_attack(k, c))
         self.assertEqual(MESSAGE, m_prime)
 
 class Test41(unittest.TestCase):

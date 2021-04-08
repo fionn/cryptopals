@@ -27,12 +27,12 @@ def recover_message(c: int, server: DecryptionServer) -> bytes:
     s = randint(2, 4096)
 
     c_prime = pow(s, e, n) * c % n
-    p_prime = int.from_bytes(server.decrypt(c_prime), "big")
+    p_prime = m39.to_int(server.decrypt(c_prime))
 
     s_inverse = m39.invmod(s, n)
     p = p_prime * s_inverse % n
 
-    return p.to_bytes((p.bit_length() + 7) // 8, "big")
+    return m39.to_bytes(p)
 
 def main() -> None:
     server = DecryptionServer()

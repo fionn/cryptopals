@@ -13,6 +13,12 @@ RSAKey = NamedTuple("RSAKey", [("exponent", int), ("modulus", int)])
 RSAKeyPair = NamedTuple("RSAKeyPair",
                         [("public", RSAKey), ("private", RSAKey)])
 
+def to_int(x: bytes) -> int:
+    return int.from_bytes(x, "big")
+
+def to_bytes(x: int) -> bytes:
+    return x.to_bytes((x.bit_length() + 7) // 8, "big")
+
 def gcd(a: int, b: int) -> int:
     """Euclidean GCD"""
     while b != 0:
@@ -44,15 +50,15 @@ def invmod(a: int, n: int) -> int:
 
     return t
 
-def keygen(size: int = 1024, e: int = 3) -> RSAKeyPair:
+def keygen(bits: int = 1024, e: int = 3) -> RSAKeyPair:
     """Generate RSA public and private key pair"""
     # e, phi(n) must be coprime for unique decryption.
     # n might be one bit short if both primes are on the small side.
     n, phi_n = 0, 0
-    while gcd(e, phi_n) != 1 or n.bit_length() != size:
+    while gcd(e, phi_n) != 1 or n.bit_length() != bits:
         # We don't choose strong primes here, just normal ones.
         # Different sizes to guarantee distinct values and make factoring harder.
-        p, q = get_prime(size // 2 - 1), get_prime(size // 2 + 1)
+        p, q = get_prime(bits // 2 - 1), get_prime(bits // 2 + 1)
         phi_n = lcm(p - 1, q - 1)  # Carmichael's totient function
         n = p * q
 
@@ -73,12 +79,12 @@ def decrypt_int(c: int, private_key: RSAKey) -> int:
 
 def encrypt(m: bytes, public_key: RSAKey) -> int:
     """Encrypt binary with RSA public key"""
-    return encrypt_int(int.from_bytes(m, "big"), public_key)
+    return encrypt_int(to_int(m), public_key)
 
 def decrypt(c: int, private_key: RSAKey) -> bytes:
     """Decrypt RSA message to binary"""
     m = decrypt_int(c, private_key)
-    return m.to_bytes((m.bit_length() + 7) // 8, "big")
+    return to_bytes(m)
 
 def main() -> None:
     """Entry point"""

@@ -50,7 +50,7 @@ flake8:
 
 .PHONY: typecheck
 typecheck:
-	@mypy $(SRC)
+	@mypy $(SRC) $(TEST)
 
 .PHONY: clean
 clean:

@@ -4,9 +4,11 @@ import gc
 import hmac
 import time
 import math
+import json
 import base64
 import hashlib
 import unittest
+import functools
 from unittest import mock
 
 from Crypto.Hash import MD4
@@ -52,6 +54,7 @@ import m39
 import m40
 import m41
 import m42
+import m43
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1015,6 +1018,123 @@ class Test42(unittest.TestCase):
         keypair = m39.keygen(bits=1024)
         s = m42.forge_signature(m, keypair.public.modulus.bit_length())
         self.assertTrue(m42.verify(m, s, keypair.public))
+
+class Test43(unittest.TestCase):
+
+    @staticmethod
+    @functools.cache
+    def data() -> dict:
+        with open("data/43.txt") as data_fd:
+            return json.load(data_fd)
+
+    def test_m43_verify_dsa_signature(self) -> None:
+        """Sign a message and verify the DSA signature"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+
+        keypair = m43.keygen(**parameters)
+        signature = m43.sign(MESSAGE, keypair.private, **parameters)
+        self.assertTrue(m43.verify(MESSAGE, signature,
+                                   keypair.public, **parameters))
+
+    def test_m43_test_bad_dsa_signature(self) -> None:
+        """Verify a message with a bad signature"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+
+        bad_sig = m43.DSASignature(parameters["q"], 0)
+        self.assertFalse(m43.verify(MESSAGE, bad_sig, 0, **parameters))
+        bad_sig = m43.DSASignature(1, parameters["q"])
+        self.assertFalse(m43.verify(MESSAGE, bad_sig, 0, **parameters))
+
+    def test_m43_recover_private_key(self) -> None:
+        """Recover private key from signature and random subkey k"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+
+        keypair = m43.keygen(**parameters)
+        signature, k = m43.sign_leak_k(MESSAGE, keypair.private, **parameters)
+        x = m43.recover_private_key(MESSAGE, signature, k, parameters["q"])
+        self.assertEqual(keypair.private, x)
+
+    def test_m43_test_vectors(self) -> None:
+        """Check given messages hashes as expected"""
+        data = self.data()
+        m = data["m"].encode()
+        h_m = m39.to_int(m28.SHA1(m).digest())
+        self.assertEqual(h_m, 0xd2d0714f014a9784047eaeccf956520045c45265)
+
+    def test_m43_validate_expected_good_signature(self) -> None:
+        """Check given message has valid signature"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+        m = data["m"].encode()
+        y = int(data["y"], 16)
+        r = int(data["r"])
+        s = int(data["s"])
+
+        signature = m43.DSASignature(r, s)
+        self.assertTrue(m43.verify(m, signature, y, **parameters))
+
+    @unittest.skip("Long test")
+    def test_m43_brute_force_recover_key(self) -> None:
+        """Recover private key by guessing random subkey k"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+        m = data["m"].encode()
+        y = int(data["y"], 16)
+        r = int(data["r"])
+        s = int(data["s"])
+
+        signature = m43.DSASignature(r, s)
+
+        k_max = 2 ** 16
+        try:
+            x, k = m43.brute_force_recover_key(m, signature, y, 0, k_max, **parameters)
+            self.assertEqual(k, 16575)
+            self.assertEqual(x, 125489817134406768603130881762531825565433175625)
+        except RuntimeError:
+            self.fail("Failed to recover private key from DSA signature")
+
+    def test_m43_brute_force_recover_key_with_known_k(self) -> None:
+        """Recover private key by providing known subkey k"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+        m = data["m"].encode()
+        y = int(data["y"], 16)
+        r = int(data["r"])
+        s = int(data["s"])
+
+        signature = m43.DSASignature(r, s)
+
+        k_min = 16574
+        k_max = 16576
+        try:
+            x, k = m43.brute_force_recover_key(m, signature, y,
+                                               k_min, k_max, **parameters)
+            self.assertEqual(x, 125489817134406768603130881762531825565433175625)
+        except RuntimeError:
+            self.fail("Failed to recover private key from DSA signature")
+
+    def test_m43_brute_force_recover_key_with_no_valid_k(self) -> None:
+        """Try to recover private key without valid k"""
+        data = self.data()
+        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
+        m = data["m"].encode()
+        y = int(data["y"], 16)
+        r = int(data["r"])
+        s = int(data["s"])
+
+        signature = m43.DSASignature(r, s)
+
+        with self.assertRaises(RuntimeError):
+            m43.brute_force_recover_key(m, signature, y, 0, 1, **parameters)
+
+    def test_m43_known_x(self) -> None:
+        """Check x hashes to expected value"""
+        x = 125489817134406768603130881762531825565433175625
+        h_x = m39.to_int(m28.SHA1(hex(x)[2:].encode()).digest())
+        self.assertEqual(h_x, 0x0954edd5e0afe5542a4adf012611a91912a3ec16)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

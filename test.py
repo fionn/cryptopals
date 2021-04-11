@@ -55,6 +55,7 @@ import m40
 import m41
 import m42
 import m43
+import m44
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1090,7 +1091,8 @@ class Test43(unittest.TestCase):
 
         k_max = 2 ** 16
         try:
-            x, k = m43.brute_force_recover_key(m, signature, y, 0, k_max, **parameters)
+            x, k = m43.brute_force_recover_key(m, signature, y,
+                                               0, k_max, **parameters)
             self.assertEqual(k, 16575)
             self.assertEqual(x, 125489817134406768603130881762531825565433175625)
         except RuntimeError:
@@ -1135,6 +1137,91 @@ class Test43(unittest.TestCase):
         x = 125489817134406768603130881762531825565433175625
         h_x = m39.to_int(m28.SHA1(hex(x)[2:].encode()).digest())
         self.assertEqual(h_x, 0x0954edd5e0afe5542a4adf012611a91912a3ec16)
+
+class Test44(unittest.TestCase):
+
+    def test_m44_verify_input(self) -> None:
+        """Check input messages have expected hashes"""
+        messages = m44.get_messages()
+        for message in messages:
+            h_m = m39.to_int(m28.SHA1(message["msg"]).digest())
+            self.assertEqual(h_m, message["m"])
+
+    def test_m44_signatures_validate(self) -> None:
+        """Validate message signatures"""
+        y = m44.PUBLIC_KEY
+        parameters = m44.get_parameters()
+        p, q, g = parameters.values()
+        messages = m44.get_messages()
+
+        for message in messages:
+            signature = m43.DSASignature(message["r"], message["s"])
+            self.assertTrue(m43.verify(message["msg"], signature, y, p, q, g))
+
+    def test_m44_candidate_messages_exist(self) -> None:
+        """Check inputs are vulnerable"""
+        messages = m44.get_messages()
+        message_groups = m44.group_by_repeated_k(messages)
+        groups_of_more_than_one = [x for x in message_groups if len(x) > 1]
+        self.assertTrue(len(groups_of_more_than_one) > 1)
+
+    def test_m44_recover_private_key(self) -> None:
+        """Check x hashes to expected value"""
+        messages = m44.get_messages()
+        parameters = m44.get_parameters()
+        q = parameters["q"]
+
+        message_groups = m44.group_by_repeated_k(messages)
+        message_group = [x for x in message_groups if len(x) > 1][0]
+
+        k = m44.recover_k(message_group[0], message_group[1], q)
+
+        message = message_group[0]
+        m = message["msg"]
+        signature = m43.DSASignature(message["r"], message["s"])
+        x = m43.recover_private_key(m, signature, k, q)
+
+        h_x = m39.to_int(m28.SHA1(hex(x)[2:].encode()).digest())
+        self.assertEqual(h_x, 0xca8f6f7c66fa362d40760d135b763eb8527d3d52)
+
+    def test_m44_consistent_x(self) -> None:
+        """Check x is independent of mesage pair choice"""
+        messages = m44.get_messages()
+        parameters = m44.get_parameters()
+        q = parameters["q"]
+
+        message_groups = m44.group_by_repeated_k(messages)
+        message_groups = [x for x in message_groups if len(x) > 1]
+
+        xs = set()
+
+        for message_group in message_groups:
+            k = m44.recover_k(message_group[0], message_group[1], q)
+
+            for message in message_group:
+                m = message["msg"]
+                signature = m43.DSASignature(message["r"], message["s"])
+                x = m43.recover_private_key(m, signature, k, q)
+                xs.add(x)
+
+        self.assertEqual(len(xs), 1)
+
+    def test_public_key_derives_from_x(self) -> None:
+        """Derive the public key y from the recovered private key"""
+        messages = m44.get_messages()
+        parameters = m44.get_parameters()
+        p, q, g = parameters.values()
+
+        message_groups = m44.group_by_repeated_k(messages)
+        message_group = [x for x in message_groups if len(x) > 1][0]
+
+        k = m44.recover_k(message_group[0], message_group[1], q)
+
+        message = message_group[0]
+        m = message["msg"]
+        signature = m43.DSASignature(message["r"], message["s"])
+        x = m43.recover_private_key(m, signature, k, q)
+        self.assertEqual(m44.PUBLIC_KEY, pow(g, x, p))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

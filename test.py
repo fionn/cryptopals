@@ -1034,9 +1034,9 @@ class Test43(unittest.TestCase):
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
 
         keypair = m43.keygen(**parameters)
-        signature = m43.sign(MESSAGE, keypair.private, **parameters)
+        signature = m43.sign(MESSAGE, keypair.x, **parameters)
         self.assertTrue(m43.verify(MESSAGE, signature,
-                                   keypair.public, **parameters))
+                                   keypair.y, **parameters))
 
     def test_m43_test_bad_dsa_signature(self) -> None:
         """Verify a message with a bad signature"""
@@ -1047,16 +1047,6 @@ class Test43(unittest.TestCase):
         self.assertFalse(m43.verify(MESSAGE, bad_sig, 0, **parameters))
         bad_sig = m43.DSASignature(1, parameters["q"])
         self.assertFalse(m43.verify(MESSAGE, bad_sig, 0, **parameters))
-
-    def test_m43_recover_private_key(self) -> None:
-        """Recover private key from signature and random subkey k"""
-        data = self.data()
-        parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
-
-        keypair = m43.keygen(**parameters)
-        signature, k = m43.sign_leak_k(MESSAGE, keypair.private, **parameters)
-        x = m43.recover_private_key(MESSAGE, signature, k, parameters["q"])
-        self.assertEqual(keypair.private, x)
 
     def test_m43_test_vectors(self) -> None:
         """Check given messages hashes as expected"""

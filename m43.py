@@ -9,18 +9,17 @@ from Crypto.Random.random import randint
 import m28
 import m39
 
-DSAKeyPair = NamedTuple("DSAKeyPair", [("public", int), ("private", int)])
+DSAKeyPair = NamedTuple("DSAKeyPair", [("y", int), ("x", int)])
 DSASignature = NamedTuple("DSASignature", [("r", int), ("s", int)])
 
 def keygen(p: int, q: int, g: int) -> DSAKeyPair:
     """Generate DSA public and pivate keypair"""
     x = randint(1, q - 1)
     y = pow(g, x, p)
-    return DSAKeyPair(public=y, private=x)
+    return DSAKeyPair(y=y, x=x)
 
-def sign_leak_k(m: bytes, x: int,
-                p: int, q: int, g: int) -> tuple[DSASignature, int]:
-    """Sign message with DSA private key and leak k"""
+def sign(m: bytes, x: int, p: int, q: int, g: int) -> DSASignature:
+    """Sign message with DSA private key"""
     h_m = m39.to_int(m28.SHA1(m).digest())
     r, s = 0, 0
     while r == 0 or s == 0:
@@ -29,12 +28,7 @@ def sign_leak_k(m: bytes, x: int,
         k_inv = m39.invmod(k, q)
         s = (k_inv * (h_m + x * r)) % q
 
-    return DSASignature(r, s), k
-
-def sign(m: bytes, x: int, p: int, q: int, g: int) -> DSASignature:
-    """Sign message with DSA private key"""
-    signature, _ = sign_leak_k(m, x, p, q, g)
-    return signature
+    return DSASignature(r, s)
 
 def verify(m: bytes, signature: DSASignature, y: int,
            p: int, q: int, g: int) -> bool:

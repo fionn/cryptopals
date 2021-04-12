@@ -74,7 +74,7 @@ Set 6: RSA and DSA
 42. [x] [Bleichenbacher's _e_ = 3 RSA Attack](m42.py)
 43. [x] [DSA key recovery from nonce](m43.py)
 44. [x] [DSA nonce recovery from repeated nonce](m44.py)
-45. [ ] DSA parameter tampering
+45. [x] [DSA parameter tampering](m45.py)
 46. [ ] RSA parity oracle
 47. [ ] Bleichenbacher's PKCS 1.5 Padding Oracle (Simple Case)
 48. [ ] Bleichenbacher's PKCS 1.5 Padding Oracle (Complete Case)

@@ -56,6 +56,7 @@ import m41
 import m42
 import m43
 import m44
+import m45
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1212,6 +1213,64 @@ class Test44(unittest.TestCase):
         signature = m43.DSASignature(message["r"], message["s"])
         x = m43.recover_private_key(m, signature, k, q)
         self.assertEqual(m44.PUBLIC_KEY, pow(g, x, p))
+
+class Test45(unittest.TestCase):
+
+    def test_m45_g_0(self) -> None:
+        """Forge signature with g = 0"""
+        p, q, _ = m44.get_parameters().values()
+        g = 0
+
+        keypair = m43.keygen(p, q, g)
+
+        m_1 = b"Hello, world"
+        m_2 = b"Goodbye, world"
+
+        signature_1 = m45.sign_relaxed(m_1, keypair.x, p, q, g)
+        signature_2 = m45.sign_relaxed(m_2, keypair.x, p, q, g)
+
+        self.assertTrue(m45.verify_relaxed(m_1, signature_1, keypair.y, p, q, g))
+        self.assertTrue(m45.verify_relaxed(m_2, signature_2, keypair.y, p, q, g))
+
+        self.assertTrue(m45.verify_relaxed(m_1, signature_2, keypair.y, p, q, g))
+        self.assertTrue(m45.verify_relaxed(m_2, signature_1, keypair.y, p, q, g))
+
+    def test_m45_g_1(self) -> None:
+        """Forge signature with g = 1 mod p"""
+        p, q, _ = m44.get_parameters().values()
+        g = p + 1
+
+        keypair = m43.keygen(p, q, g)
+
+        m_1 = b"Hello, world"
+        m_2 = b"Goodbye, world"
+
+        signature_1 = m43.sign(m_1, keypair.x, p, q, g)
+        signature_2 = m43.sign(m_2, keypair.x, p, q, g)
+
+        self.assertTrue(m43.verify(m_1, signature_1, keypair.y, p, q, g))
+        self.assertTrue(m43.verify(m_2, signature_2, keypair.y, p, q, g))
+
+        self.assertTrue(m43.verify(m_1, signature_2, keypair.y, p, q, g))
+        self.assertTrue(m43.verify(m_2, signature_1, keypair.y, p, q, g))
+
+        self.assertTrue(m43.verify(MESSAGE, signature_1, keypair.y, p, q, g))
+
+    def test_m45_magic_signature(self) -> None:
+        """Forge signature with magic"""
+        p, q, g = m44.get_parameters().values()
+
+        keypair = m43.keygen(p, q, g)
+
+        m_1 = b"Hello, world"
+        m_2 = b"Goodbye, world"
+
+        magic_signature = m45.magic_signature_generator(keypair.y, p, q)
+
+        g = p + 1
+
+        self.assertTrue(m43.verify(m_1, magic_signature, keypair.y, p, q, g))
+        self.assertTrue(m43.verify(m_2, magic_signature, keypair.y, p, q, g))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

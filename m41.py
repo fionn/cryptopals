@@ -7,7 +7,6 @@ from Crypto.Random.random import randint
 
 import m39
 
-# pylint: disable=too-few-public-methods
 class DecryptionServer:
 
     def __init__(self, size: int = 1024, e: int = 3) -> None:

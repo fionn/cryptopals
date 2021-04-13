@@ -12,7 +12,6 @@ def prime() -> int:
     with open("data/33.txt", "r") as prime_file:
         return int(prime_file.read().replace("\n", ""), 16)
 
-# pylint: disable=too-few-public-methods
 class IntegerHasher:
 
     @staticmethod
@@ -54,7 +53,6 @@ class SRPPeer(ABC, IntegerHasher):
 # pylint: disable=too-many-instance-attributes
 class Client(SRPPeer):
 
-    # pylint: disable=too-many-arguments
     def __init__(self, p: int = None, email: str = None,
                  password: str = None, g: int = 2, k: int = 3) -> None:
         super().__init__()

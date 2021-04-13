@@ -74,7 +74,6 @@ class MD4:
     def _H(x: int, y: int, z: int) -> int:
         return x ^ y ^ z
 
-    # pylint: disable=too-many-arguments
     def round_one_op(self, x: List[int], a: int, b: int, c: int, d: int,
                      k: int, s: int) -> int:
         return self._lrot(a + MD4._F(b, c, d) + x[k] & 0xffffffff, s)
@@ -89,7 +88,6 @@ class MD4:
         return self._lrot(a + MD4._H(b, c, d) + x[k]
                           + 0x6ed9eba1 & 0xffffffff, s)
 
-    # pylint: disable=too-many-arguments
     def round_one(self, x: List[int], a: int, b: int, c: int, d: int) -> Register:
         for k in range(16):
             if k % 4 == 0:

@@ -105,7 +105,7 @@ class HMACListener:
         except (urllib.error.HTTPError, ConnectionResetError):
             pass
 
-class HMACAttack:  # pylint: disable=too-few-public-methods
+class HMACAttack:
 
     def __init__(self, server: tuple) -> None:
         self.server = server

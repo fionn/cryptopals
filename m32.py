@@ -7,7 +7,7 @@ from Crypto.Random.random import getrandbits
 
 import m31
 
-class HMACAttack(m31.HMACAttack):  # pylint: disable=too-few-public-methods
+class HMACAttack(m31.HMACAttack):
 
     def __init__(self, server: Tuple[str, int], repetitions: int) -> None:
         super().__init__(server)

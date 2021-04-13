@@ -16,10 +16,9 @@ import m36
 # Note that we nececessarily diverge from the problem as stated.
 # See https://depp.brause.cc/cryptopals/05/38.rb for a correct formulation.
 
-# pylint: disable=too-few-public-methods,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 class SimpleClient(m36.IntegerHasher):
 
-    # pylint: disable=too-many-arguments
     def __init__(self, prime: int, generator: int,
                  username: str, password: str) -> None:
         self.n = prime

@@ -75,7 +75,7 @@ Set 6: RSA and DSA
 43. [x] [DSA key recovery from nonce](m43.py)
 44. [x] [DSA nonce recovery from repeated nonce](m44.py)
 45. [x] [DSA parameter tampering](m45.py)
-46. [ ] RSA parity oracle
+46. [x] [RSA parity oracle](m46.py)
 47. [ ] Bleichenbacher's PKCS 1.5 Padding Oracle (Simple Case)
 48. [ ] Bleichenbacher's PKCS 1.5 Padding Oracle (Complete Case)
 

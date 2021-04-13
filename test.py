@@ -57,6 +57,7 @@ import m42
 import m43
 import m44
 import m45
+import m46
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1271,6 +1272,23 @@ class Test45(unittest.TestCase):
 
         self.assertTrue(m43.verify(m_1, magic_signature, keypair.y, p, q, g))
         self.assertTrue(m43.verify(m_2, magic_signature, keypair.y, p, q, g))
+
+class Test46(unittest.TestCase):
+
+    def test_m46_parity(self) -> None:
+        """Test parity oracle"""
+        oracle = m46.RSAParityOracle(32)
+        c_even = m39.encrypt_int(2, oracle.pubkey)
+        c_odd = m39.encrypt_int(3, oracle.pubkey)
+        self.assertTrue(oracle.is_even(c_even))
+        self.assertFalse(oracle.is_even(c_odd))
+
+    def test_m46_attack_parity_oracle(self) -> None:
+        """Decrypt via parity oracle"""
+        oracle = m46.RSAParityOracle(128)
+        c = m39.encrypt(MESSAGE, oracle.pubkey)
+        m = m46.parity_oracle_attack(c, oracle)
+        self.assertEqual(m, MESSAGE)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

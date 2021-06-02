@@ -177,6 +177,12 @@ class Test09(unittest.TestCase):
         message = m09.de_pkcs7(m09.pkcs7(zero_pad_message))
         self.assertEqual(message, zero_pad_message)
 
+    def test_m09_pad_big_block(self) -> None:
+        """PKCS7 with blocksize too large"""
+        blocksize = 256 + len(MESSAGE)
+        with self.assertRaises(m09.PKCS7Error):
+            m09.pkcs7(MESSAGE, blocksize)
+
 class Test10(unittest.TestCase):
 
     def test_m10_aes_cbc_encrypt(self) -> None:
@@ -313,7 +319,7 @@ class Test22(unittest.TestCase):
 
     def test_m22_crack_artificial_seed(self) -> None:
         """Crack an artificial MT19937 seed"""
-        seed = int(time.time())
+        seed = int(time.time()) - 1
         r = m21.MT19937(seed).random()
         seed_candidate = m22.crack_seed(r)
         self.assertEqual(seed, seed_candidate)
@@ -1107,7 +1113,7 @@ class Test43(unittest.TestCase):
             x, k = m43.brute_force_recover_key(m, signature, y,
                                                k_min, k_max, **parameters)
             self.assertEqual(x, 125489817134406768603130881762531825565433175625)
-        except RuntimeError:
+        except RuntimeError:  # pragma: no cover
             self.fail("Failed to recover private key from DSA signature")
 
     def test_m43_brute_force_recover_key_with_no_valid_k(self) -> None:

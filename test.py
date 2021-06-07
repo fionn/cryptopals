@@ -58,6 +58,7 @@ import m43
 import m44
 import m45
 import m46
+import m47
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1295,6 +1296,76 @@ class Test46(unittest.TestCase):
         c = m39.encrypt(MESSAGE, oracle.pubkey)
         m = m46.parity_oracle_attack(c, oracle)
         self.assertEqual(m, MESSAGE)
+
+class Test47(unittest.TestCase):
+
+    @staticmethod
+    def static_keygen() -> m39.RSAKeyPair:
+        """Generates a key-pair for fast attack"""
+        n = 0xb4eaed55a442a4957ed84162c4523e24ec2bc7984fe56690cb8911bf9d687d85
+        e = 0x1e27278e460b1b6e3fceb590760db505c7fd0ccbfa74d419835688126e860f2d
+        return m39.RSAKeyPair(m39.RSAKey(exponent=3, modulus=n),
+                              m39.RSAKey(exponent=e, modulus=n))
+
+    def test_m47_padding_ok(self) -> None:
+        """Test oracle padding verification"""
+        oracle = m47.RSAPaddingOracle()
+        m = m42.pkcs1v15_pad(data=MESSAGE,
+                             bits=oracle.pubkey.modulus.bit_length(),
+                             block_type=2)
+        c = m39.encrypt(m, oracle.pubkey)
+        self.assertTrue(oracle.padding_ok(c))
+
+    @unittest.skip("Potentially long test")
+    def test_m47_smallest_coefficient(self) -> None:
+        """Test step 2a: find smallest s_1"""
+        oracle = m47.RSAPaddingOracle()
+        n = oracle.pubkey.modulus
+        m = m42.pkcs1v15_pad(data=MESSAGE,
+                             bits=n.bit_length(),
+                             block_type=2)
+        c_0 = m39.encrypt(m, oracle.pubkey)
+
+        k = n.bit_length() // 8
+        B = 2 ** (8 * (k - 2))
+        s_1 = m47.smallest_coefficient(oracle, c_0, B)
+        c_1 = (c_0 * pow(s_1, oracle.pubkey.exponent, n)) % n
+
+        self.assertGreater(s_1, n // (3 * B))
+        self.assertTrue(oracle.padding_ok(c_1))
+
+    @unittest.skip("Potentially long test")
+    def test_m47_attack(self) -> None:
+        """Bleichenbacker's PKCS#1 v1.5 attack"""
+        oracle = m47.RSAPaddingOracle()
+        m = m42.pkcs1v15_pad(data=MESSAGE,
+                             bits=oracle.pubkey.modulus.bit_length(),
+                             block_type=2)
+        c = m39.encrypt(m, oracle.pubkey)
+        m_int = m47.attack(oracle, c)
+        m_prime = b"\x00" + m39.to_bytes(m_int)
+        self.assertEqual(m_prime, m)
+
+    def test_m47_fast_attack(self) -> None:
+        """Bleichenbacker's PKCS#1 v1.5 attack with fast keypair"""
+        fast_keypair = self.static_keygen()
+        oracle = m47.RSAPaddingOracle()
+        oracle.pubkey = fast_keypair.public
+        # pylint: disable=protected-access
+        oracle._private_key = fast_keypair.private
+
+        m = m42.pkcs1v15_pad(data=MESSAGE,
+                             bits=oracle.pubkey.modulus.bit_length(),
+                             block_type=2)
+        c = m39.encrypt(m, oracle.pubkey)
+        m_int = m47.attack(oracle, c)
+        m_prime = b"\x00" + m39.to_bytes(m_int)
+        self.assertEqual(m_prime, m)
+
+    def test_m47_unpad_inverse(self) -> None:
+        """Compare unpadded PKCS#1 v1.5 message to original"""
+        m_padded = m42.pkcs1v15_pad(data=MESSAGE, bits=256, block_type=2)
+        self.assertEqual(MESSAGE, m47.pkcs1v15_unpad(m_padded))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

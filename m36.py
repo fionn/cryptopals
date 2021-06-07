@@ -4,7 +4,7 @@
 import hmac
 import hashlib
 from abc import ABC, abstractmethod
-from typing import Union, Dict
+from typing import Union, Any
 
 from Crypto.Random.random import randrange
 
@@ -70,17 +70,17 @@ class Client(SRPPeer):
             self.A = pow(self.g, self._a, self.N)
         return self.A
 
-    def negotiate_send(self) -> Dict[str, Union[str, int]]:
+    def negotiate_send(self) -> dict[str, Union[str, int]]:
         return {"N": self.N,
                 "g": self.g,
                 "k": self.k,
                 "I": self.I,
                 "p": self.P}
 
-    def send_email_pubkey(self) -> Dict[str, Union[str, int]]:
+    def send_email_pubkey(self) -> dict[str, Union[str, int]]:
         return {"I": self.I, "pubkey": self.pubkey()}
 
-    def receive_salt_pubkey(self, parameters: Dict[str, int]) -> None:
+    def receive_salt_pubkey(self, parameters: dict[str, int]) -> None:
         self.salt = parameters["salt"]
         self.B = parameters["pubkey"]
 
@@ -110,17 +110,17 @@ class Server(SRPPeer):
         x = self._integer_hash(self.salt, self.P)
         self._v = pow(self.g, x, self.N)
 
-    def negotiate_receive(self, parameters: dict) -> None:
+    def negotiate_receive(self, parameters: dict[str, Any]) -> None:
         self.N = parameters["N"]
         self.g = parameters["g"]
         self.k = parameters["k"]
         self.I = parameters["I"]
         self.P = parameters["p"]
 
-    def send_salt_pubkey(self) -> Dict[str, int]:
+    def send_salt_pubkey(self) -> dict[str, int]:
         return {"salt": self.salt, "pubkey": self.pubkey()}
 
-    def receive_email_pubkey(self, parameters: dict) -> None:
+    def receive_email_pubkey(self, parameters: dict[str, Any]) -> None:
         if self.I != parameters["I"]:
             raise ValueError("Expected {} but got {} instead"
                              .format(self.I, parameters["I"]))

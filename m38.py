@@ -45,12 +45,12 @@ class SimpleServer(m36.IntegerHasher):
         self.g = generator
 
         self._b = randrange(self.n)
-        self.client: dict[str, dict] = {}
+        self.client: dict[str, dict[str, int]] = {}
 
     def register(self, I: str, s: int, v: int) -> None:
         self.client[I] = {"s": s, "v": v}
 
-    def receive_pubkey(self, I: str, A: int) -> dict:
+    def receive_pubkey(self, I: str, A: int) -> dict[str, int]:
         self.client[I]["A"] = A
         self.client[I]["u"] = randrange(16)
 

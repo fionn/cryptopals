@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """ECB cut-and-paste"""
 
-from typing import Dict
-
 from Crypto.Cipher import AES
 from Crypto.Random.random import getrandbits
 
@@ -10,7 +8,7 @@ from m09 import pkcs7, de_pkcs7
 
 RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
 
-def parse(string: str) -> Dict[str, str]:
+def parse(string: str) -> dict[str, str]:
     cookie = dict()
     for pairs in string.split("&"):
         key, value = pairs.split("=")
@@ -29,7 +27,7 @@ def oracle(email: str) -> bytes:
     cypher = AES.new(RANDOM_KEY, AES.MODE_ECB)
     return cypher.encrypt(pkcs7(bytes(profile, "ascii"), 16))
 
-def decrypt_oracle(profile: bytes) -> Dict[str, str]:
+def decrypt_oracle(profile: bytes) -> dict[str, str]:
     cypher = AES.new(RANDOM_KEY, AES.MODE_ECB)
     profile = de_pkcs7(cypher.decrypt(profile))
     return parse(profile.decode())

@@ -2,11 +2,9 @@
 """Detect single-character XOR"""
 # "Now that the party is jumping"
 
-from typing import List
-
 from m03 import break_single_byte_xor, mostprobable
 
-def findxoredstring(cyphertext: List[bytes]) -> bytes:
+def findxoredstring(cyphertext: list[bytes]) -> bytes:
     candidates = []
     for line in cyphertext:
         line = break_single_byte_xor(line)

@@ -2,8 +2,6 @@
 """Single-byte XOR cipher"""
 # "Cooking MC's like a pound of bacon"
 
-from typing import List
-
 from m02 import fixed_xor
 from data.frequency import frequency
 
@@ -26,10 +24,10 @@ def score(sentence: bytes) -> float:
 
     return chi_sq
 
-def xor_everything(s: bytes) -> List[bytes]:
+def xor_everything(s: bytes) -> list[bytes]:
     return [fixed_xor(bytes([k] * len(s)), s) for k in range(256)]
 
-def mostprobable(sentences: list) -> bytes:
+def mostprobable(sentences: list[bytes]) -> bytes:
     lowscore = float("inf")
     solution = b""
     for sentence in sentences:

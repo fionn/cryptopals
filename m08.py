@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detect AES in ECB mode"""
 
-from typing import Optional, List
+from typing import Optional
 
 def ecb_score(cyphertext: bytes, k: int) -> int:
     duplicates = 0
@@ -12,7 +12,7 @@ def ecb_score(cyphertext: bytes, k: int) -> int:
                 duplicates += 1
     return duplicates
 
-def detect_ecb(candidates: List[bytes], blocksize: int) -> Optional[bytes]:
+def detect_ecb(candidates: list[bytes], blocksize: int) -> Optional[bytes]:
     ecb_candidate = None
     bound = 0
     for cyphertext in candidates:

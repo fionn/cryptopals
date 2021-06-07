@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Implement Diffie-Hellman"""
 
-from typing import Tuple
-
 from Crypto.Random.random import randrange
 
 class DHPeer:
@@ -18,7 +16,7 @@ class DHPeer:
     def session_key(self, B: int) -> int:
         return pow(B, self._a, self.p)
 
-def dh_key_exchange(p: int, g: int) -> Tuple[int, int]:
+def dh_key_exchange(p: int, g: int) -> tuple[int, int]:
     alice = DHPeer(p, g)
     bob = DHPeer(p, g)
 

@@ -6,8 +6,8 @@ import time
 import threading
 import urllib.request
 import urllib.error
+from typing import Generator
 from collections import namedtuple
-from typing import Generator, Type, Tuple
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from Crypto.Random.random import getrandbits
@@ -78,7 +78,7 @@ class Handler(BaseHandler):
 
 class HMACListener:
 
-    def __init__(self, server: Tuple[str, int], key: bytes,
+    def __init__(self, server: tuple[str, int], key: bytes,
                  delay: float) -> None:
         self.server = server
         self.key = key
@@ -86,7 +86,7 @@ class HMACListener:
         self.stop_serving = threading.Event()
 
     def run(self, server_class: type = HTTPServer,
-            handler_class: Type[BaseHandler] = Handler) -> None:
+            handler_class: type[BaseHandler] = Handler) -> None:
         self.stop_serving.clear()
         handler_class.key = self.key
         handler_class.delay = self.delay
@@ -107,11 +107,11 @@ class HMACListener:
 
 class HMACAttack:
 
-    def __init__(self, server: tuple) -> None:
+    def __init__(self, server: tuple[str, int]) -> None:
         self.server = server
         self.base = bytearray(20)
 
-    def _send_forgery(self, message: str, signature: str) -> tuple:
+    def _send_forgery(self, message: str, signature: str) -> tuple[int, float]:
         query_string = "/test?file=" + message \
                        + "&signature=" + signature
         url = "http://{}:{}".format(*self.server) + query_string
@@ -140,7 +140,7 @@ class HMACAttack:
               end="\r", file=sys.stdout, flush=True)
 
     def get_sha1_hmac(self, message: str) -> str:
-        time_leak = 0
+        time_leak = 0.0
         for i in range(20):
             sig_gen = self._signature_generator(i, self.base)
             for binary_sig in sig_gen:

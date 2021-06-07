@@ -3,7 +3,7 @@
 
 from copy import copy
 
-from typing import Generator, Tuple, Union, List
+from typing import Generator, Tuple, Union
 
 Register = Union[Tuple[int, ...], Tuple[int, int, int, int, int]]
 
@@ -52,7 +52,7 @@ class SHA1:
         for i in range(0, len(data), self.block_size):
             yield data[i:i + self.block_size]
 
-    def _update_register(self, chunk: bytes) -> List[int]:
+    def _update_register(self, chunk: bytes) -> list[int]:
         w = [0] * 80
         for j in range(16):
             w[j] = int.from_bytes(chunk[4 * j:4 * (j + 1)], "big")

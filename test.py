@@ -1033,7 +1033,7 @@ class Test43(unittest.TestCase):
 
     @staticmethod
     @functools.cache
-    def data() -> dict:
+    def data() -> dict[str, str]:
         with open("data/43.txt") as data_fd:
             return json.load(data_fd)
 

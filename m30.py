@@ -3,7 +3,7 @@
 
 import struct
 from copy import copy
-from typing import Generator, Tuple, Union, List
+from typing import Generator, Tuple, Union
 
 from Crypto.Random.random import getrandbits, randint
 
@@ -74,21 +74,21 @@ class MD4:
     def _H(x: int, y: int, z: int) -> int:
         return x ^ y ^ z
 
-    def round_one_op(self, x: List[int], a: int, b: int, c: int, d: int,
+    def round_one_op(self, x: list[int], a: int, b: int, c: int, d: int,
                      k: int, s: int) -> int:
         return self._lrot(a + MD4._F(b, c, d) + x[k] & 0xffffffff, s)
 
-    def round_two_op(self, x: List[int], a: int, b: int, c: int, d: int,
+    def round_two_op(self, x: list[int], a: int, b: int, c: int, d: int,
                      k: int, s: int) -> int:
         return self._lrot(a + MD4._G(b, c, d) + x[k]
                           + 0x5a827999 & 0xffffffff, s)
 
-    def round_three_op(self, x: List[int], a: int, b: int, c: int, d: int,
+    def round_three_op(self, x: list[int], a: int, b: int, c: int, d: int,
                        k: int, s: int) -> int:
         return self._lrot(a + MD4._H(b, c, d) + x[k]
                           + 0x6ed9eba1 & 0xffffffff, s)
 
-    def round_one(self, x: List[int], a: int, b: int, c: int, d: int) -> Register:
+    def round_one(self, x: list[int], a: int, b: int, c: int, d: int) -> Register:
         for k in range(16):
             if k % 4 == 0:
                 a = self.round_one_op(x, a, b, c, d, k, 3)
@@ -101,7 +101,7 @@ class MD4:
 
         return a, b, c, d
 
-    def round_two(self, x: List[int], a: int, b: int, c: int, d: int) -> Register:
+    def round_two(self, x: list[int], a: int, b: int, c: int, d: int) -> Register:
         for i in range(16):
             k = (i // 4 + 4 * i) % 16
             if i % 4 == 0:
@@ -115,7 +115,7 @@ class MD4:
 
         return a, b, c, d
 
-    def round_three(self, x: List[int], a: int, b: int, c: int, d: int) -> Register:
+    def round_three(self, x: list[int], a: int, b: int, c: int, d: int) -> Register:
         for i in range(16):
             k = self._vandercorput[i]
             if i % 4 == 0:

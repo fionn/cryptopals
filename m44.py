@@ -3,7 +3,7 @@
 
 import json
 import functools
-from typing import Union
+from typing import Union, Any
 
 import m39
 import m43
@@ -16,13 +16,13 @@ PUBLIC_KEY = int("2d026f4bf30195ede3a088da85e398ef869611d0f68f07"
                  "2971c3de5084cce04a2e147821", 16)
 
 @functools.cache
-def get_parameters(filename: str = "data/43.txt") -> dict:
+def get_parameters(filename: str = "data/43.txt") -> dict[str, int]:
     with open(filename) as data_fd:
         data = json.load(data_fd)
     return {k: int(data[k], 16) for k in ["p", "q", "g"]}
 
 @functools.cache
-def get_messages(filename: str = "data/44.txt") -> list[dict]:
+def get_messages(filename: str = "data/44.txt") -> list[dict[str, Any]]:
     with open(filename) as data_fd:
         lines = data_fd.readlines()
 
@@ -37,21 +37,23 @@ def get_messages(filename: str = "data/44.txt") -> list[dict]:
 
     return messages
 
-def group_by_repeated_k(messages: list[dict]) -> list[dict]:
+def group_by_repeated_k(messages: list[dict[str, Any]]) \
+                        -> list[list[dict[str, Any]]]:
     """
     r = g^k mod p mod q, so we match up messages with identical r values
     which implies they were signed with the same nonce k
     """
-    same_r: dict[int, list] = dict()
+    same_r: dict[int, list[dict[str, Any]]] = dict()
     for message in messages:
         try:
             same_r[message["r"]].append(message)
         except KeyError:
             same_r[message["r"]] = [message]
 
-    return list(same_r.values())  # type: ignore
+    return list(same_r.values())
 
-def recover_k(message_1: dict, message_2: dict, q: int) -> int:
+def recover_k(message_1: dict[str, Any], message_2: dict[str, Any],
+              q: int) -> int:
     m_1 = message_1["m"]
     m_2 = message_2["m"]
     s_1 = message_1["s"]

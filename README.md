@@ -77,7 +77,7 @@ Set 6: RSA and DSA
 45. [x] [DSA parameter tampering](m45.py)
 46. [x] [RSA parity oracle](m46.py)
 47. [x] [Bleichenbacher's PKCS 1.5 Padding Oracle (Simple Case)](m47.py)
-48. [ ] Bleichenbacher's PKCS 1.5 Padding Oracle (Complete Case)
+48. [x] [Bleichenbacher's PKCS 1.5 Padding Oracle (Complete Case)](m48.py)
 
 Set 7: Hashes
 -------------

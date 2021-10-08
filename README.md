@@ -23,7 +23,7 @@ Set 2: Block crypto
 -------------------
 
 9. [x] [Implement PKCS#7 padding](m09.py)
-10. [x] [Implement CBC mode ](m10.py)
+10. [x] [Implement CBC mode](m10.py)
 11. [x] [An ECB/CBC detection oracle](m11.py)
 12. [x] [Byte-at-a-time ECB decryption (Simple)](m12.py)
 13. [x] [ECB cut-and-paste](m13.py)
@@ -102,4 +102,3 @@ Set 8: Abstract algebra
 62. [ ] Key-Recovery Attacks on ECDSA with Biased Nonces
 63. [ ] Key-Recovery Attacks on GCM with Repeated Nonces
 64. [ ] Key-Recovery Attacks on GCM with a Truncated MAC
-

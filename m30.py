@@ -15,9 +15,9 @@ class MD4:
     digest_size = 16
     register = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476)
 
-    def __init__(self, data: bytes = bytes()) -> None:
+    def __init__(self, data: bytes = b"") -> None:
         self._register: Register = MD4.register
-        self.data = bytes()
+        self.data = b""
         self._vandercorput = [self._binaryreverse(x) for x in range(16)]
         self.update(data)
 
@@ -31,8 +31,8 @@ class MD4:
             self._compress(chunk)
         return self
 
-    def new(self, data: bytes = bytes()) -> "MD4":
-        self.data = bytes()
+    def new(self, data: bytes = b"") -> "MD4":
+        self.data = b""
         self.update(data)
         return self
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Implement and break HMAC-SHA1 with an artificial timing leak"""
 
+# pylint: disable=consider-using-f-string
+
 import sys
 import time
 import threading
@@ -99,10 +101,12 @@ class HMACListener:
 
     def stop(self) -> None:
         self.stop_serving.set()
+        url = "http://{}:{}".format(*self.server)
         try:
-            url = "http://{}:{}".format(*self.server)
-            urllib.request.urlopen(url)
-        except (urllib.error.HTTPError, ConnectionResetError):
+            with urllib.request.urlopen(url):
+                pass
+        except (urllib.error.HTTPError, ConnectionResetError,
+                urllib.error.URLError):
             pass
 
 class HMACAttack:
@@ -118,7 +122,8 @@ class HMACAttack:
         start_time = time.time()
 
         try:
-            status_code = urllib.request.urlopen(url).getcode()
+            with urllib.request.urlopen(url) as response:
+                status_code = response.getcode()
         except urllib.error.HTTPError as e:
             if e.code not in {200, 500}:
                 raise e
@@ -159,7 +164,7 @@ class HMACAttack:
 def main() -> None:
     file_name = b"foo"
     key = bytes(getrandbits(8) for i in range(16))
-    local_server = ("localhost", 9000)
+    local_server = ("localhost", 9031)
 
     listener = HMACListener(local_server, key, delay=0.025)
 

@@ -29,13 +29,12 @@ class HMACAttack(m31.HMACAttack):
                     self.print_progress(sig_hex,
                                         delta_zero / self.repetitions, i)
 
-        raise RuntimeError("Could not determine HMAC, got {}"
-                           .format(self.base.hex()))
+        raise RuntimeError(f"Could not determine HMAC, got {self.base.hex()}")
 
 def main() -> None:
     file_name = b"foo"
     key = bytes(getrandbits(8) for i in range(16))
-    local_server = ("localhost", 9000)
+    local_server = ("localhost", 9032)
 
     listener = m31.HMACListener(local_server, key, delay=0.005)
     hmac_attack = HMACAttack(local_server, 10)

@@ -12,19 +12,19 @@ class SHA1:
     digest_size = 20
     name = "sha1"
 
-    def __init__(self, data: bytes = bytes()) -> None:
+    def __init__(self, data: bytes = b"") -> None:
         self.h: Register = (0x67452301, 0xefcdab89,
                             0x98badcfe, 0x10325476, 0xc3d2e1f0)
         self._current_register: Register = self.h
-        self.data = bytes()
+        self.data = b""
         self.update(data)
 
     @staticmethod
     def _leftrotate(b: int, n: int = 1) -> int:
         return (b << n | b >> 32 - n) & 0xffffffff
 
-    def new(self, data: bytes = bytes()) -> "SHA1":
-        self.data = bytes()
+    def new(self, data: bytes = b"") -> "SHA1":
+        self.data = b""
         self.update(data)
         return self
 

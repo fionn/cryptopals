@@ -19,7 +19,7 @@ def transpose_bytes(c: list[bytes]) -> list[bytes]:  # this is ugly
     #c_T = [bytes(x) for x in list(zip(*c))]
     c_t = []
     for l in range(max(map(len, c))):
-        v = bytes()
+        v = b""
         for i in c:
             try:
                 v += bytes([i[l]])

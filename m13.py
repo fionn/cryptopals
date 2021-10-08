@@ -9,7 +9,7 @@ from m09 import pkcs7, de_pkcs7
 RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
 
 def parse(string: str) -> dict[str, str]:
-    cookie = dict()
+    cookie = {}
     for pairs in string.split("&"):
         key, value = pairs.split("=")
         cookie[key] = value

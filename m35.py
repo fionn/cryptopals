@@ -43,7 +43,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
         threading.Thread(target=self._listen).start()
 
     def __repr__(self) -> str:
-        return "{}(\"{}\")".format(self.__class__.__name__, self.name)
+        return f"{self.__class__.__name__}(\"{self.name}\")"
 
     def __del__(self) -> None:
         self._stop_listening.set()
@@ -89,7 +89,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
             self._sock_incoming.close()
 
     def _get_buffer(self) -> "DHSocket.Buffer":
-        stream = bytes()
+        stream = b""
         while True:
             if self._connection:
                 block = self._connection.recv(1024)
@@ -190,7 +190,7 @@ class DHMaliciousSocket(DHSocket):
         super().__init__(name, address=address)
         self.original_g = None
         self.bad_g = bad_g
-        self._peers: dict[str, DHSocket.Peer] = dict()
+        self._peers: dict[str, DHSocket.Peer] = {}
 
     def __del__(self) -> None:
         super().__del__()
@@ -279,7 +279,7 @@ class DHMaliciousSocket(DHSocket):
                 except UnicodeDecodeError:
                     continue
             return longest_message
-        raise RuntimeError("g must be 1, p or p - 1, not {}".format(self.bad_g))
+        raise RuntimeError(f"g must be 1, p or p - 1, not {self.bad_g}")
 
 def dh_protocol(p: int, g: int, message: bytes) -> bytes:
     alice = DHSocket("alice", p, g)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Cryptopals tests"""
 
 import gc
 import hmac
@@ -68,12 +69,14 @@ PRIME = 197
 G = 2
 
 class Test01(unittest.TestCase):
+    """Convert hex to base64"""
 
     def test_m01_sanity(self) -> None:
         """hex_to_base64 should pass 0 --> 0"""
         self.assertEqual(m01.hex_to_base64("00"), "AA==")
 
 class Test02(unittest.TestCase):
+    """Fixed XOR"""
 
     def test_m02_sanity(self) -> None:
         """a xor a = 0, a xor 0 = a"""
@@ -87,6 +90,7 @@ class Test02(unittest.TestCase):
                           lambda: m02.fixed_xor(bytes([256]), b"\x00"))
 
 class Test03(unittest.TestCase):
+    """Single-byte XOR cipher"""
 
     def test_m03_xor_everything_sanity(self) -> None:
         """xor_everything on \\x00 produces [\\x00, ..., \\xff]"""
@@ -100,6 +104,7 @@ class Test03(unittest.TestCase):
         self.assertEqual(m03.score(b""), 0)
 
 class Test04(unittest.TestCase):
+    """Detect single-character XOR"""
 
     def test_m04_find_xored_string(self) -> None:
         """find_xored_string"""
@@ -109,6 +114,7 @@ class Test04(unittest.TestCase):
         self.assertEqual(m04.findxoredstring(data), xored_string)
 
 class Test05(unittest.TestCase):
+    """Implement repeating-key XOR"""
 
     def test_m05_repeating_key_xor(self) -> None:
         """repeating_key_xor"""
@@ -122,6 +128,7 @@ class Test05(unittest.TestCase):
                                   "b2027630c692b20283165286326302e27282f")
 
 class Test06(unittest.TestCase):
+    """Break repeating-key XOR"""
 
     def test_m06_hamming_distance(self) -> None:
         """Hamming distance matches known value"""
@@ -150,6 +157,7 @@ class Test06(unittest.TestCase):
                          b"I'm back and I'm ringin' the bell")
 
 class Test08(unittest.TestCase):
+    """Detect AES in ECB mode"""
 
     def test_m08_ecb_score(self) -> None:
         """Trivial values for ecb_score"""
@@ -166,6 +174,7 @@ class Test08(unittest.TestCase):
         self.assertEqual(index, 132)
 
 class Test09(unittest.TestCase):
+    """Implement PKCS#7 padding"""
 
     def test_m09_de_pkcs7_inverts_pkcs7(self) -> None:
         """de_pkcs7 inverts pkcs7"""
@@ -185,6 +194,7 @@ class Test09(unittest.TestCase):
             m09.pkcs7(MESSAGE, blocksize)
 
 class Test10(unittest.TestCase):
+    """Implement CBC mode"""
 
     def test_m10_aes_cbc_encrypt(self) -> None:
         """encrypt_aes_cbc matches Crypto.Cipher.AES"""
@@ -209,6 +219,7 @@ class Test10(unittest.TestCase):
         self.assertEqual(m, plaintext)
 
 class Test11(unittest.TestCase):
+    """An ECB/CBC detection oracle"""
 
     def test_m11_detect_ecb(self) -> None:
         """Detect ECB"""
@@ -217,6 +228,7 @@ class Test11(unittest.TestCase):
             self.assertIn(m11.detect_ecb(cyphertext), [True, False])
 
 class Test12(unittest.TestCase):
+    """Byte-at-a-time ECB decryption (Simple)"""
 
     def test_m12_blocksize(self) -> None:
         """Detect blocksize"""
@@ -232,9 +244,10 @@ class Test12(unittest.TestCase):
                          b"Rollin' in my 5.0")
 
 class Test13(unittest.TestCase):
+    """ECB cut-and-paste"""
 
     def test_m13_end_to_end(self) -> None:
-        """ECB cut-and-paste"""
+        """Forge cookie with ECB cut-and-paste"""
         email = "fake@mail.com"
         admin_cookie = m13.rewrite_cookie(email)
         profile = m13.decrypt_oracle(admin_cookie)
@@ -242,12 +255,14 @@ class Test13(unittest.TestCase):
         self.assertEqual(profile["role"], "admin")
 
 class Test14(unittest.TestCase):
+    """Byte-at-a-time ECB decryption (Harder)"""
 
     def test_m14_end_to_end(self) -> None:
-        """Byte-at-a-time ECB decryption (harder)"""
+        """End-to-end byte-at-a-time ECB decryption (harder)"""
         self.assertTrue(m14.break_ecb(m14.oracle))
 
 class Test15(unittest.TestCase):
+    """PKCS#7 padding validation"""
 
     def test_m15_equal_pkcs7_padding(self) -> None:
         """pkcs7 pads correctly"""
@@ -268,23 +283,26 @@ class Test15(unittest.TestCase):
         self.assertRaises(m15.PKCS7PaddingError, m15.de_pkcs7, s_pad)
 
 class Test16(unittest.TestCase):
+    """CBC bitflipping attacks"""
 
     def test_m16_cbc_bitflipping_attack(self) -> None:
-        """CBC bitflipping attack"""
+        """End-to-end CBC bitflipping attack"""
         plaintext = bytes(16) + b"00000:admin<true"
         cyphertext = m16.oracle(plaintext)
         cyphertext = m16.cbc_bitflip(cyphertext)
         self.assertTrue(m16.is_admin(cyphertext))
 
 class Test17(unittest.TestCase):
+    """The CBC padding oracle"""
 
     def test_m17_end_to_end(self) -> None:
-        """The CBC padding oracle"""
+        """End-to-end attack on the CBC padding oracle"""
         c = m17.cbc_oracle()
         m = m17.attack(c)
         self.assertTrue(m)
 
 class Test18(unittest.TestCase):
+    """Implement CTR, the stream cipher mode"""
 
     def test_m18_aes_ctr(self) -> None:
         """aes_ctr matches Crypto.Cipher.AES"""
@@ -301,6 +319,7 @@ class Test18(unittest.TestCase):
         self.assertEqual(plaintext, MESSAGE)
 
 class Test21(unittest.TestCase):
+    """Implement the MT19937 Mersenne Twister RNG"""
 
     def test_m21_mersenne_twister(self) -> None:
         """MT19937 returns a known good value"""
@@ -309,10 +328,11 @@ class Test21(unittest.TestCase):
         self.assertEqual(mt.random(), 3499211612)
 
 class Test22(unittest.TestCase):
+    """Crack an MT19937 seed"""
 
     @unittest.skip("Extremely long test")
     def test_m22_end_to_end(self) -> None:
-        """Crack an MT19937 seed"""
+        """Crack an MT19937 seed, end-to-end"""
         r = m22.sleep_mersenne()
         seed = m22.crack_seed(r)
         clone = m21.MT19937(seed)
@@ -326,6 +346,7 @@ class Test22(unittest.TestCase):
         self.assertEqual(seed, seed_candidate)
 
 class Test23(unittest.TestCase):
+    """Clone an MT19937 RNG from its output"""
 
     def test_m23_clone_mt(self) -> None:
         """mt_clone clones an MT19937 instance"""
@@ -334,14 +355,15 @@ class Test23(unittest.TestCase):
         self.assertEqual(mt.random(), mt_clone.random())
 
 class Test24(unittest.TestCase):
+    """Create the MT19937 stream cipher and break it"""
 
     def test_m24_verify_mt19937_crypt(self) -> None:
-        """verify_mt19937_crypt"""
+        """Verify MT19937 steam cipher encryption"""
         self.assertTrue(m24.verify_mt19937_crypt(bytes(10), 0xffff))
 
     @unittest.skip("Long test")
     def test_m24_crack_mt19937(self) -> None:
-        """Get MT19937 stream cypher seed"""
+        """Get MT19937 stream cipher seed"""
         seed = getrandbits(16)
         prefix = bytes(getrandbits(8) for i in range(randint(0, 100)))
         plaintext = prefix + b"A" * 14
@@ -356,14 +378,16 @@ class Test24(unittest.TestCase):
         self.assertEqual(seed, 1)
 
 class Test25(unittest.TestCase):
+    """Break "random access read/write" AES CTR"""
 
     def test_m25_end_to_end(self) -> None:
-        """Break "random access read/write" AES CTR"""
+        """AES-CTR random access read/write attack"""
         c = m18.aes_ctr(MESSAGE, m25.RANDOM_KEY)
         m_prime = m25.break_rarw(c)
         self.assertEqual(MESSAGE, m_prime)
 
 class Test26(unittest.TestCase):
+    """CTR bitflipping"""
 
     def test_m26_ctr_bitflipping(self) -> None:
         """CTR bitflipping attack"""
@@ -373,14 +397,16 @@ class Test26(unittest.TestCase):
         self.assertTrue(m26.is_admin(cyphertext))
 
 class Test27(unittest.TestCase):
+    """Recover the key from CBC with IV = Key"""
 
     def test_m27_end_to_end(self) -> None:
-        """Recover the key from CBC with IV = Key"""
+        """CBC key recovery with IV = key"""
         c = m27.bad_cbc_encryption(MESSAGE * 3)
         k = m27.cbc_iv_key(c)
         self.assertEqual(k, m27.RANDOM_KEY)
 
 class Test28(unittest.TestCase):
+    """Implement a SHA-1 keyed MAC"""
 
     def test_m28_sha1(self) -> None:
         """SHA1 matches hashlib.sha1"""
@@ -491,6 +517,7 @@ class Test28(unittest.TestCase):
         self.assertEqual(h.digest(), h_prime.digest())
 
 class Test29(unittest.TestCase):
+    """Break a SHA-1 keyed MAC using length extension"""
 
     def test_m29_end_to_end(self) -> None:
         """Break a SHA-1 keyed MAC using length extension"""
@@ -510,6 +537,7 @@ class Test29(unittest.TestCase):
         self.fail("No extended HMAC validated")
 
 class Test30(unittest.TestCase):
+    """Break an MD4 keyed MAC using length extension"""
 
     def test_m30_md4_test_vectors(self) -> None:
         """MD4 digests test vectors correctly (RFC1320)"""
@@ -651,6 +679,7 @@ class Test30(unittest.TestCase):
         self.assertIn(True, verification)
 
 class Test31(unittest.TestCase):
+    """Implement and break HMAC-SHA1 with an artificial timing leak"""
 
     def test_m31_hmac_sha1(self) -> None:
         """hmac_sha1 matches hmac.new(k, m, sha1)"""
@@ -701,6 +730,7 @@ class Test31(unittest.TestCase):
         self.assertTrue(m31.verify_hmac_sha1_hex(m, signature, k, 0))
 
 class Test33(unittest.TestCase):
+    """Implement Diffie-Hellman"""
 
     def test_m33_dh_key_exchange(self) -> None:
         """Diffie-Hellman peers agree on shared secret"""
@@ -708,6 +738,8 @@ class Test33(unittest.TestCase):
         self.assertEqual(s_a, s_b)
 
 class Test34(unittest.TestCase):
+    """Implement a MITM key-fixing attack on Diffie-Hellman
+       with parameter injection"""
 
     def test_m34_dh_protocol(self) -> None:
         """Diffie-Hellman peer receives message"""
@@ -720,6 +752,8 @@ class Test34(unittest.TestCase):
         self.assertEqual(intercepted, MESSAGE)
 
 class Test35(unittest.TestCase):
+    """Implement DH with negotiated groups,
+       and break with malicious g parameters"""
 
     @staticmethod
     def tearDown() -> None:
@@ -746,6 +780,7 @@ class Test35(unittest.TestCase):
         self.assertEqual(plaintext, MESSAGE)
 
 class Test36(unittest.TestCase):
+    """Implement Secure Remote Password (SRP)"""
 
     def test_m36_client_pubkey(self) -> None:
         """client-side public key"""
@@ -808,6 +843,7 @@ class Test36(unittest.TestCase):
         self.assertTrue(result)
 
 class Test37(unittest.TestCase):
+    """Break SRP with a zero key"""
 
     def test_m37_srp_zero_key(self) -> None:
         """Break SRP with a zero key"""
@@ -830,6 +866,7 @@ class Test37(unittest.TestCase):
             self.assertTrue(result)
 
 class Test38(unittest.TestCase):
+    """Offline dictionary attack on simplified SRP"""
 
     def test_m38_simple_srp(self) -> None:
         """Implement simple SRP"""
@@ -869,6 +906,7 @@ class Test38(unittest.TestCase):
         self.assertEqual(candidate_password, password)
 
 class Test39(unittest.TestCase):
+    """Implement RSA"""
 
     def test_m39_gcd(self) -> None:
         """Sanity check Euclidean GCD"""
@@ -930,6 +968,7 @@ class Test39(unittest.TestCase):
             m39.encrypt_int(m, public)
 
 class Test40(unittest.TestCase):
+    """Implement an e = 3 RSA broadcast attack"""
 
     def test_m40_integer_root(self) -> None:
         """Find the integer nth root"""
@@ -972,6 +1011,7 @@ class Test40(unittest.TestCase):
         self.assertEqual(MESSAGE, m_prime)
 
 class Test41(unittest.TestCase):
+    """Implement unpadded message recovery oracle"""
 
     def test_m41_repeated_decryption(self) -> None:
         """Try to decrypt multiple times"""
@@ -990,6 +1030,7 @@ class Test41(unittest.TestCase):
         self.assertEqual(m, MESSAGE)
 
 class Test42(unittest.TestCase):
+    """Bleichenbacher's e = 3 RSA Attack"""
 
     def test_m42_pkcs1v15_pad(self) -> None:
         """Pad a message with PKCS#1 v1.5"""
@@ -1030,6 +1071,7 @@ class Test42(unittest.TestCase):
         self.assertTrue(m42.verify(m, s, keypair.public))
 
 class Test43(unittest.TestCase):
+    """DSA key recovery from nonce"""
 
     @staticmethod
     @functools.cache
@@ -1138,6 +1180,7 @@ class Test43(unittest.TestCase):
         self.assertEqual(h_x, 0x0954edd5e0afe5542a4adf012611a91912a3ec16)
 
 class Test44(unittest.TestCase):
+    """DSA nonce recovery from repeated nonce"""
 
     def test_m44_verify_input(self) -> None:
         """Check input messages have expected hashes"""
@@ -1223,6 +1266,7 @@ class Test44(unittest.TestCase):
         self.assertEqual(m44.PUBLIC_KEY, pow(g, x, p))
 
 class Test45(unittest.TestCase):
+    """DSA parameter tampering"""
 
     def test_m45_g_0(self) -> None:
         """Forge signature with g = 0"""
@@ -1281,6 +1325,7 @@ class Test45(unittest.TestCase):
         self.assertTrue(m43.verify(m_2, magic_signature, keypair.y, p, q, g))
 
 class Test46(unittest.TestCase):
+    """RSA parity oracle"""
 
     def test_m46_parity(self) -> None:
         """Test parity oracle"""
@@ -1298,6 +1343,7 @@ class Test46(unittest.TestCase):
         self.assertEqual(m, MESSAGE)
 
 class Test47(unittest.TestCase):
+    """Bleichenbacher's PKCS 1.5 Padding Oracle (Simple Case)"""
 
     @staticmethod
     def static_keygen() -> m39.RSAKeyPair:

@@ -28,7 +28,7 @@ def get_messages(filename: str = "data/44.txt") -> list[dict[str, Any]]:
 
     messages = []
     for i in range(0, len(lines), 4):
-        element: dict[str, Union[bytes, int]] = dict()
+        element: dict[str, Union[bytes, int]] = {}
         element["msg"] = lines[i].split("msg: ")[1].strip("\n").encode()
         element["s"] = int(lines[i + 1].split("s: ", maxsplit=1)[1])
         element["r"] = int(lines[i + 2].split("r: ", maxsplit=1)[1])
@@ -43,7 +43,7 @@ def group_by_repeated_k(messages: list[dict[str, Any]]) \
     r = g^k mod p mod q, so we match up messages with identical r values
     which implies they were signed with the same nonce k
     """
-    same_r: dict[int, list[dict[str, Any]]] = dict()
+    same_r: dict[int, list[dict[str, Any]]] = {}
     for message in messages:
         try:
             same_r[message["r"]].append(message)

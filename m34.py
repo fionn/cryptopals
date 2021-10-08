@@ -96,7 +96,8 @@ def dh_parameter_injection(p: int, g: int, message: bytes) -> bytes:
     return intercepted_set.pop()
 
 def main() -> None:
-    p = int(open("data/33.txt", "r").read().replace("\n", ""), 16)
+    with open("data/33.txt", "r", encoding="ascii") as fd:
+        p = int(fd.read().replace("\n", ""), 16)
     g = 2
 
     message = b"Attack at dawn"

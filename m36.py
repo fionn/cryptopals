@@ -122,8 +122,7 @@ class Server(SRPPeer):
 
     def receive_email_pubkey(self, parameters: dict[str, Any]) -> None:
         if self.I != parameters["I"]:
-            raise ValueError("Expected {} but got {} instead"
-                             .format(self.I, parameters["I"]))
+            raise ValueError("Expected {self.I}, got {parameters['I']} instead")
         self.A = parameters["pubkey"]
 
     def gen_K(self) -> None:

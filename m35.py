@@ -168,14 +168,14 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
 
     def send_message(self, message: bytes) -> None:
         iv = bytes(getrandbits(8) for i in range(16))
-        cyphertext = encrypt_aes_cbc(pkcs7(message), self._aes_key(), iv)
+        cyphertext = encrypt_aes_cbc(self._aes_key(), iv, pkcs7(message))
         self._send(cyphertext + iv, self._peer)
 
     def decrypt(self, cyphertext: bytes = None) -> bytes:
         cyphertext = cyphertext or self._message_buffer.pop()
         iv = cyphertext[-16:]
-        message = de_pkcs7(decrypt_aes_cbc(cyphertext[:-16],
-                                           self._aes_key(), iv))
+        message = de_pkcs7(decrypt_aes_cbc(self._aes_key(), iv,
+                                           cyphertext[:-16]))
         return message
 
     def echo_message(self) -> None:

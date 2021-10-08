@@ -19,14 +19,14 @@ def ascii_compliant(plaintext: bytes) -> bool:
 
 def oracle(cyphertext: bytes) -> Optional[bytes]:
     key = RANDOM_KEY
-    plaintext = decrypt_aes_cbc(cyphertext, key, iv=key)
+    plaintext = decrypt_aes_cbc(key, iv=key, cyphertext=cyphertext)
     if not ascii_compliant(plaintext):
         return plaintext
     return None
 
 def bad_cbc_encryption(plaintext: bytes) -> bytes:
     key = RANDOM_KEY
-    return encrypt_aes_cbc(pkcs7(plaintext), key, iv=key)
+    return encrypt_aes_cbc(key, iv=key, plaintext=pkcs7(plaintext))
 
 def cbc_iv_key(cyphertext: bytes) -> Optional[bytes]:
     c_prime = cyphertext[:16] + bytes(16) + cyphertext[:16]

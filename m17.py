@@ -19,12 +19,12 @@ def choose_plaintext() -> bytes:
 
 def cbc_oracle() -> bytes:
     plaintext = choose_plaintext()
-    return encrypt_aes_cbc(plaintext, RANDOM_KEY, IV)
+    return encrypt_aes_cbc(RANDOM_KEY, IV, plaintext)
 
 def padding_oracle(cyphertext: bytes) -> bool:
     key = RANDOM_KEY
     iv = IV
-    plaintext = decrypt_aes_cbc(cyphertext, key, iv)
+    plaintext = decrypt_aes_cbc(key, iv, cyphertext)
     pad_length = plaintext[-1]
     return pad_length * bytes([pad_length]) == plaintext[-pad_length:]
 

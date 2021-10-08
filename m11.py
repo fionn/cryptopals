@@ -16,7 +16,7 @@ def encryption_oracle(plaintext: bytes) -> bytes:
 
     if randrange(2) == 0:
         iv = bytes(getrandbits(8) for i in range(16))
-        return encrypt_aes_cbc(plaintext, key, iv)
+        return encrypt_aes_cbc(key, iv, plaintext)
 
     cypher = AES.new(key, AES.MODE_ECB)
     return cypher.encrypt(plaintext)

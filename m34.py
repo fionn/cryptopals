@@ -38,14 +38,14 @@ class DHProtocolPeer(DHPeer):
 
     def send_message(self, message: bytes) -> None:
         iv = bytes(getrandbits(8) for i in range(16))
-        cyphertext = encrypt_aes_cbc(pkcs7(message), self._aes_key(), iv)
+        cyphertext = encrypt_aes_cbc(self._aes_key(), iv, pkcs7(message))
         self.peer.receive_message(cyphertext + iv)
 
     def receive_message(self, cyphertext: bytes) -> None:
         self.received_cyphertext = cyphertext
         iv = cyphertext[-16:]
-        message = de_pkcs7(decrypt_aes_cbc(cyphertext[:-16],
-                                           self._aes_key(), iv))
+        message = de_pkcs7(decrypt_aes_cbc(self._aes_key(), iv,
+                                           cyphertext[:-16]))
         self.received_message = message
 
     def reply(self) -> None:
@@ -54,8 +54,8 @@ class DHProtocolPeer(DHPeer):
     def forward_and_decrypt(self, key: bytes) -> bytes:
         key = SHA1(key).digest()[:16]
         iv = self.received_cyphertext[-16:]
-        message = de_pkcs7(decrypt_aes_cbc(self.received_cyphertext[:-16],
-                                           key, iv))
+        message = de_pkcs7(decrypt_aes_cbc(key, iv,
+                                           self.received_cyphertext[:-16]))
         self.peer.receive_message(self.received_cyphertext)
         return message
 

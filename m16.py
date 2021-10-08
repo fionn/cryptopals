@@ -14,10 +14,10 @@ def oracle(userdata: bytes) -> bytes:
     postfix = b";comment2=%20like%20a%20pound%20of%20bacon"
     userdata = userdata.replace(b";", b"").replace(b"=", b"")
     plaintext = pkcs7(prefix + userdata + postfix)
-    return encrypt_aes_cbc(plaintext, key, iv=bytes(16))
+    return encrypt_aes_cbc(key, iv=bytes(16), plaintext=plaintext)
 
 def is_admin(cyphertext: bytes, key: bytes = RANDOM_KEY) -> bool:
-    plaintext = decrypt_aes_cbc(cyphertext, key, iv=bytes(16))
+    plaintext = decrypt_aes_cbc(key, iv=bytes(16), cyphertext=cyphertext)
     plaintext_str = plaintext.decode(errors="replace")
     return "admin=true" in plaintext_str
 

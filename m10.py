@@ -8,7 +8,7 @@ from Crypto.Cipher import AES
 from m02 import fixed_xor
 from m09 import de_pkcs7
 
-def encrypt_aes_cbc(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
+def encrypt_aes_cbc(key: bytes, iv: bytes, plaintext: bytes) -> bytes:
     cypher = AES.new(key, AES.MODE_ECB)
     blocks = [plaintext[i:i + len(key)]
               for i in range(0, len(plaintext), len(key))]
@@ -23,7 +23,7 @@ def encrypt_aes_cbc(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
 
     return cyphertext
 
-def decrypt_aes_cbc(cyphertext: bytes, key: bytes, iv: bytes) -> bytes:
+def decrypt_aes_cbc(key: bytes, iv: bytes, cyphertext: bytes) -> bytes:
     cypher = AES.new(key, AES.MODE_ECB)
     blocks = [cyphertext[i:i + len(key)]
               for i in range(0, len(cyphertext), len(key))]
@@ -44,7 +44,7 @@ def main() -> None:
     key = b"YELLOW SUBMARINE"
     iv = bytes(len(key))
 
-    plaintext = de_pkcs7(decrypt_aes_cbc(cyphertext, key, iv))
+    plaintext = de_pkcs7(decrypt_aes_cbc(key, iv, cyphertext))
     print(plaintext.decode())
 
 if __name__ == "__main__":

@@ -200,7 +200,7 @@ class Test10(unittest.TestCase):
         """encrypt_aes_cbc matches Crypto.Cipher.AES"""
         cypher = AES.new(KEY, AES.MODE_CBC, IV)
         crypto_cyphertext = cypher.encrypt(m09.pkcs7(MESSAGE))
-        cyphertext = m10.encrypt_aes_cbc(m09.pkcs7(MESSAGE), KEY, IV)
+        cyphertext = m10.encrypt_aes_cbc(KEY, IV, m09.pkcs7(MESSAGE))
         self.assertEqual(cyphertext, crypto_cyphertext)
 
     def test_m10_aes_cbc_decrypt(self) -> None:
@@ -208,14 +208,14 @@ class Test10(unittest.TestCase):
         cyphertext = b"x\x9b\xdb\xf8\x93\xae[x\x9a%\xb7\xffT\x1fc\xd5"
         cypher = AES.new(KEY, AES.MODE_CBC, IV)
         crypto_plaintext = cypher.decrypt(cyphertext)
-        plaintext = m10.decrypt_aes_cbc(cyphertext, KEY, IV)
+        plaintext = m10.decrypt_aes_cbc(KEY, IV, cyphertext)
         self.assertEqual(plaintext, crypto_plaintext)
 
     def test_m10_aes_cbc_symmetry(self) -> None:
         """decrypt_aes_cbc inverts encrypt_aes_cbc"""
         m = m09.pkcs7(MESSAGE)
-        cyphertext = m10.encrypt_aes_cbc(m, KEY, IV)
-        plaintext = m10.decrypt_aes_cbc(cyphertext, KEY, IV)
+        cyphertext = m10.encrypt_aes_cbc(KEY, IV, m)
+        plaintext = m10.decrypt_aes_cbc(KEY, IV, cyphertext)
         self.assertEqual(m, plaintext)
 
 class Test11(unittest.TestCase):

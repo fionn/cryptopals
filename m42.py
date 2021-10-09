@@ -68,6 +68,7 @@ def main() -> None:
     assert verify(m, s, keypair.public)
 
     forgery = forge_signature(m, keypair.public.modulus.bit_length())
+    print(hex(forgery))
     assert verify(m, forgery, keypair.public)
 
 if __name__ == "__main__":

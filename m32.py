@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Break HMAC-SHA1 with a slightly less artificial timing leak"""
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 import m31
 
@@ -33,22 +33,18 @@ class HMACAttack(m31.HMACAttack):
 
 def main() -> None:
     file_name = b"foo"
-    key = bytes(getrandbits(8) for i in range(16))
+    key = get_random_bytes(16)
     local_server = ("localhost", 9032)
 
     listener = m31.HMACListener(local_server, key, delay=0.005)
     hmac_attack = HMACAttack(local_server, 10)
+    listener.run()
 
     try:
-        listener.run()
-
         hex_hmac = hmac_attack.get_sha1_hmac(file_name.decode())
         assert hex_hmac == m31.hmac_sha1(key, file_name).hexdigest()
         print(hex_hmac)
-
-        listener.stop()
-
-    except KeyboardInterrupt:
+    finally:
         listener.stop()
 
 if __name__ == "__main__":

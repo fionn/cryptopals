@@ -15,6 +15,7 @@ from unittest import mock
 from Crypto.Hash import MD4
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
+from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randint, getrandbits
 
 import m01
@@ -45,6 +46,7 @@ import m28
 import m29
 import m30
 import m31
+import m32
 import m33
 import m34
 import m35
@@ -733,6 +735,57 @@ class Test31(unittest.TestCase):
         k, m = KEY, MESSAGE
         signature = m31.hmac_sha1(k, m).hexdigest().encode()
         self.assertTrue(m31.verify_hmac_sha1_hex(m, signature, k, 0))
+
+    def test_m31_instantiate_listener(self) -> None:
+        """Instantiate listener"""
+        local_server = ("localhost", 9131)
+        listener = m31.HMACListener(local_server, KEY, delay=0.025)
+        self.assertTrue(listener)
+        listener.run()
+        listener.stop()
+
+    @unittest.skip("Extremely long test")
+    def test_m31_end_to_end(self) -> None:
+        """End-to-end HMAC-SHA1 attack (artificial timing leak)"""
+        file_name = b"foo"
+        key = get_random_bytes(16)
+        local_server = ("localhost", 9131)
+
+        listener = m31.HMACListener(local_server, key, delay=0.025)
+        listener.run()
+
+        try:
+            hmac_attack = m31.HMACAttack(local_server)
+            hex_hmac = hmac_attack.get_sha1_hmac(file_name.decode())
+            self.assertEqual(hex_hmac, m31.hmac_sha1(key, file_name).hexdigest())
+        finally:
+            listener.stop()
+
+class Test32(unittest.TestCase):
+    """Break HMAC-SHA1 with a slightly less artificial timing leak"""
+
+    def test_m32_instantiate_attack(self) -> None:
+        """Instantiate the attack class"""
+        local_server = ("localhost", 9132)
+        hmac_attack = m32.HMACAttack(local_server, 10)
+        self.assertTrue(hmac_attack)
+
+    @unittest.skip("Extremely long test")
+    def test_m32_end_to_end(self) -> None:
+        """End-to-end HMAC-SHA1 attack (realistic timing leak)"""
+        file_name = b"foo"
+        key = get_random_bytes(16)
+        local_server = ("localhost", 9132)
+
+        listener = m31.HMACListener(local_server, key, delay=0.005)
+        hmac_attack = m32.HMACAttack(local_server, 10)
+        listener.run()
+
+        try:
+            hex_hmac = hmac_attack.get_sha1_hmac(file_name.decode())
+            self.assertEqual(hex_hmac, m31.hmac_sha1(key, file_name).hexdigest())
+        finally:
+            listener.stop()
 
 class Test33(unittest.TestCase):
     """Implement Diffie-Hellman"""

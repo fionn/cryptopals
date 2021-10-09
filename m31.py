@@ -12,7 +12,7 @@ from typing import Generator
 from collections import namedtuple
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m02 import fixed_xor
 from m28 import SHA1
@@ -163,22 +163,18 @@ class HMACAttack:
 
 def main() -> None:
     file_name = b"foo"
-    key = bytes(getrandbits(8) for i in range(16))
+    key = get_random_bytes(16)
     local_server = ("localhost", 9031)
 
     listener = HMACListener(local_server, key, delay=0.025)
+    listener.run()
 
     try:
-        listener.run()
-
         hmac_attack = HMACAttack(local_server)
         hex_hmac = hmac_attack.get_sha1_hmac(file_name.decode())
         assert hex_hmac == hmac_sha1(key, file_name).hexdigest()
         print(hex_hmac)
-
-        listener.stop()
-
-    except KeyboardInterrupt:
+    finally:
         listener.stop()
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@
 # "hit the bull's eye, the kid don't play"
 
 def fixed_xor(a: bytes, b: bytes) -> bytes:
+    if len(a) != len(b):
+        raise ValueError("Arguments must be of equal length")
     d = bytearray()
     for i, j in zip(a, b):
         d.append(i ^ j)

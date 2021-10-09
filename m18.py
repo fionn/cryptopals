@@ -19,7 +19,7 @@ def aes_ctr(cyphertext: bytes, key: bytes, nonce: int = 0) -> bytes:
     ctr = 0
     for block in c:
         keystream = pack("<Qq", nonce, ctr)
-        message += fixed_xor(cypher.encrypt(keystream), block)
+        message += fixed_xor(cypher.encrypt(keystream)[:len(block)], block)
         ctr += 1
     return message
 

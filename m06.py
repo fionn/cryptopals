@@ -33,7 +33,7 @@ def key(cyphertext: bytes) -> bytes:
               for i in range(0, len(cyphertext), keysize)]
     blocks = [bytes(x) for x in list(zip(*blocks[0:-1]))]
     plaintext = bytes([m03.break_single_byte_xor(x)[0] for x in blocks])
-    return m02.fixed_xor(plaintext, cyphertext)
+    return m02.fixed_xor(plaintext, cyphertext[:len(plaintext)])
 
 def break_repeating_key_xor(cyphertext: bytes) -> bytes:
     return m05.repeating_key_xor(key(cyphertext), cyphertext)

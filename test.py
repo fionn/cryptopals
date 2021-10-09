@@ -89,6 +89,11 @@ class Test02(unittest.TestCase):
         self.assertRaises(ValueError,
                           lambda: m02.fixed_xor(bytes([256]), b"\x00"))
 
+    def test_fixed_xor_different_lengths(self) -> None:
+        """xor a and b of differing lengths"""
+        with self.assertRaises(ValueError):
+            m02.fixed_xor(b"0", b"01")
+
 class Test03(unittest.TestCase):
     """Single-byte XOR cipher"""
 

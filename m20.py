@@ -34,7 +34,7 @@ def single_byte_xor_key(c: list[bytes]) -> bytes:
 
 def break_fixed_nonce_ctr(c: list[bytes]) -> list[bytes]:
     k = single_byte_xor_key(c)
-    return [fixed_xor(cyphertext, k) for cyphertext in c]
+    return [fixed_xor(cyphertext, k[:len(cyphertext)]) for cyphertext in c]
 
 def main() -> None:
     with open("data/20.txt", "r") as f:

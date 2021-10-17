@@ -62,6 +62,7 @@ import m44
 import m45
 import m46
 import m47
+import m49
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1470,6 +1471,59 @@ class Test47(unittest.TestCase):
         """Compare unpadded PKCS#1 v1.5 message to original"""
         m_padded = m42.pkcs1v15_pad(data=MESSAGE, bits=256, block_type=2)
         self.assertEqual(MESSAGE, m47.pkcs1v15_unpad(m_padded))
+
+class Test49(unittest.TestCase):
+    """CBC-MAC Message Forgery"""
+
+    def test_v1_message_validation(self) -> None:
+        """Send a message and validate it"""
+        from_id = "me"
+        client = m49.ClientV1(from_id)
+        server = m49.ServerV1()
+
+        parsed_message = {"to_id": "you", "amount": 1000}
+        request = client.send(**parsed_message)  # type: ignore
+
+        self.assertTrue(server.validate(request))
+
+    def test_v1_fail_to_validate(self) -> None:
+        """Send a bad message v1"""
+        client = m49.ClientV1("0001")
+        server = m49.ServerV1()
+        request = client.send(to_id="0002", amount=100)
+        request += b"\x02"
+        self.assertFalse(server.validate(request))
+        with self.assertRaises(Exception):
+            server.process(request)
+
+    def test_v1_attack_variable_iv(self) -> None:
+        """Forge a message because the IV isn't fixed"""
+        attacker_id = "0001"
+        victim_id = "0002"
+        forgery = m49.forge_via_variable_iv(attacker_id, victim_id)
+        tx = m49.ServerV1.process(forgery)
+        self.assertEqual(tx["to"], attacker_id)
+        self.assertEqual(tx["from"], victim_id)
+        self.assertEqual(tx["amount"], "1000000")
+
+    def test_v2_fail_to_validate(self) -> None:
+        """Send a bad message v2"""
+        client = m49.ClientV2("1")
+        server = m49.ServerV2()
+        request = client.send({"2": 100})
+        request += b"\x02"
+        self.assertFalse(server.validate(request))
+        with self.assertRaises(Exception):
+            server.process(request)
+
+    def test_v2_attack_via_length_extension(self) -> None:
+        """Forge a message by extending CBC-MAC"""
+        attacker_id = "1"
+        victim_id = "2"
+        forgery = m49.forge_via_length_extension(attacker_id, victim_id)
+        txs = m49.ServerV2.process(forgery)
+        self.assertEqual(txs["from"], victim_id)
+        self.assertIn({"to": attacker_id, "amount": 1000000}, txs["tx_list"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

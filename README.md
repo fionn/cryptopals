@@ -82,7 +82,7 @@ Set 6: RSA and DSA
 Set 7: Hashes
 -------------
 
-49. [ ] CBC-MAC Message Forgery
+49. [x] [CBC-MAC Message Forgery](m49.py)
 50. [ ] Hashing with CBC-MAC
 51. [ ] Compression Ratio Side-Channel Attacks
 52. [ ] Iterated Hash Function Multicollisions

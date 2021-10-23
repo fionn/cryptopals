@@ -63,6 +63,7 @@ import m45
 import m46
 import m47
 import m49
+import m50
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1524,6 +1525,25 @@ class Test49(unittest.TestCase):
         txs = m49.ServerV2.process(forgery)
         self.assertEqual(txs["from"], victim_id)
         self.assertIn({"to": attacker_id, "amount": 1000000}, txs["tx_list"])
+
+class Test50(unittest.TestCase):
+    """Hashing with CBC-MAC"""
+
+    def test_cbc_mac_test_vector(self) -> None:
+        js = b"alert('MZA who was that?');\n"
+        key = b"YELLOW SUBMARINE"
+        iv = bytes(16)
+        mac = m49.cbc_mac(key, iv, m09.pkcs7(js))
+        self.assertEqual(mac.hex(), "296b8d7cb78a243dda4d0a61d33bbdd1")
+
+    def test_forge_hash(self) -> None:
+        m = b"alert('MZA who was that?');\n"
+
+        m_prime = b"alert('Ayo, the Wu is back!');//"
+        forgery = m50.forge_hash(m, m_prime, KEY, IV)
+
+        self.assertEqual(m49.cbc_mac(KEY, IV, m09.pkcs7(m)),
+                         m49.cbc_mac(KEY, IV, forgery))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

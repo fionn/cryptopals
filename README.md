@@ -83,7 +83,7 @@ Set 7: Hashes
 -------------
 
 49. [x] [CBC-MAC Message Forgery](m49.py)
-50. [ ] Hashing with CBC-MAC
+50. [x] [Hashing with CBC-MAC](m50.py)
 51. [ ] Compression Ratio Side-Channel Attacks
 52. [ ] Iterated Hash Function Multicollisions
 53. [ ] Kelsey and Schneier's Expandable Messages

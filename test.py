@@ -75,20 +75,20 @@ G = 2
 class Test01(unittest.TestCase):
     """Convert hex to base64"""
 
-    def test_m01_sanity(self) -> None:
+    def test_hex_to_base64_sanity(self) -> None:
         """hex_to_base64 should pass 0 --> 0"""
         self.assertEqual(m01.hex_to_base64("00"), "AA==")
 
 class Test02(unittest.TestCase):
     """Fixed XOR"""
 
-    def test_m02_sanity(self) -> None:
+    def test_fixed_xor_sanity(self) -> None:
         """a xor a = 0, a xor 0 = a"""
         for i in range(256):
             self.assertEqual(m02.fixed_xor(bytes([i]), bytes([i])), b"\x00")
             self.assertEqual(m02.fixed_xor(bytes([i]), b"\x00"), bytes([i]))
 
-    def test_m02_out_of_range(self) -> None:
+    def test_fixed_xor_out_of_range(self) -> None:
         """fixed_xor(x) should fail when x !in [0, 255]"""
         self.assertRaises(ValueError,
                           lambda: m02.fixed_xor(bytes([256]), b"\x00"))
@@ -101,21 +101,21 @@ class Test02(unittest.TestCase):
 class Test03(unittest.TestCase):
     """Single-byte XOR cipher"""
 
-    def test_m03_xor_everything_sanity(self) -> None:
+    def test_xor_everything_sanity(self) -> None:
         """xor_everything on \\x00 produces [\\x00, ..., \\xff]"""
         x = m03.xor_everything(b"\x00")
         self.assertEqual(len(x), 256)
         for i in range(256):
             self.assertEqual(x[i], bytes([i]))
 
-    def test_m03_score_empty_input(self) -> None:
+    def test_score_empty_input(self) -> None:
         """score zero for zero-length input"""
         self.assertEqual(m03.score(b""), 0)
 
 class Test04(unittest.TestCase):
     """Detect single-character XOR"""
 
-    def test_m04_find_xored_string(self) -> None:
+    def test_find_xored_string(self) -> None:
         """find_xored_string"""
         with open("data/04.txt", "r") as f:
             data = [bytes.fromhex(line) for line in f.read().splitlines()]
@@ -125,7 +125,7 @@ class Test04(unittest.TestCase):
 class Test05(unittest.TestCase):
     """Implement repeating-key XOR"""
 
-    def test_m05_repeating_key_xor(self) -> None:
+    def test_repeating_key_xor(self) -> None:
         """repeating_key_xor"""
         with open("data/05.txt", "r") as f:
             message = bytes(f.read().rstrip(), "ascii")
@@ -139,26 +139,26 @@ class Test05(unittest.TestCase):
 class Test06(unittest.TestCase):
     """Break repeating-key XOR"""
 
-    def test_m06_hamming_distance(self) -> None:
+    def test_hamming_distance(self) -> None:
         """Hamming distance matches known value"""
         s1, s2 = b"this is a test", b"wokka wokka!!!"
         self.assertEqual(m06.hamming_distance(s1, s2), 37)
         self.assertEqual(m06.hamming_distance(s2, s2), 0)
 
-    def test_m06_hamming_distance_wrong_size(self) -> None:
+    def test_hamming_distance_wrong_size(self) -> None:
         """Hamming distance raises on different sizes"""
         s1 = b"different"
         s2 = b"sizes"
         with self.assertRaises(IndexError):
             m06.hamming_distance(s1, s2)
 
-    def test_m06_key(self) -> None:
+    def test_key(self) -> None:
         """Generate key"""
         with open("data/06.txt", "r") as f:
             cyphertext = base64.b64decode(f.read())
         self.assertEqual(m06.key(cyphertext), b"Terminator X: Bring the noise")
 
-    def test_m06_break_repeating_key_xor(self) -> None:
+    def test_break_repeating_key_xor(self) -> None:
         """Break repeating key xor"""
         with open("data/06.txt", "r") as f:
             cyphertext = base64.b64decode(f.read())
@@ -168,12 +168,12 @@ class Test06(unittest.TestCase):
 class Test08(unittest.TestCase):
     """Detect AES in ECB mode"""
 
-    def test_m08_ecb_score(self) -> None:
+    def test_ecb_score(self) -> None:
         """Trivial values for ecb_score"""
         self.assertEqual(m08.ecb_score(bytes(BLOCKSIZE), BLOCKSIZE), 0)
         self.assertEqual(m08.ecb_score(bytes(2 * BLOCKSIZE), BLOCKSIZE), 1)
 
-    def test_m08_detct_ecb(self) -> None:
+    def test_detct_ecb(self) -> None:
         """Detect ECB"""
         with open("data/08.txt", "r") as f:
             g = [bytes.fromhex(cyphertext) for cyphertext in f.read().splitlines()]
@@ -185,18 +185,18 @@ class Test08(unittest.TestCase):
 class Test09(unittest.TestCase):
     """Implement PKCS#7 padding"""
 
-    def test_m09_de_pkcs7_inverts_pkcs7(self) -> None:
+    def test_de_pkcs7_inverts_pkcs7(self) -> None:
         """de_pkcs7 inverts pkcs7"""
         message = m09.de_pkcs7(m09.pkcs7(MESSAGE))
         self.assertEqual(message, MESSAGE)
 
-    def test_m09_zero_padding(self) -> None:
+    def test_zero_padding(self) -> None:
         """PKCS7 with zero padding"""
         zero_pad_message = b"YELLOW SUBMARINE"
         message = m09.de_pkcs7(m09.pkcs7(zero_pad_message))
         self.assertEqual(message, zero_pad_message)
 
-    def test_m09_pad_big_block(self) -> None:
+    def test_pad_big_block(self) -> None:
         """PKCS7 with blocksize too large"""
         blocksize = 256 + len(MESSAGE)
         with self.assertRaises(m09.PKCS7Error):
@@ -205,14 +205,14 @@ class Test09(unittest.TestCase):
 class Test10(unittest.TestCase):
     """Implement CBC mode"""
 
-    def test_m10_aes_cbc_encrypt(self) -> None:
+    def test_aes_cbc_encrypt(self) -> None:
         """encrypt_aes_cbc matches Crypto.Cipher.AES"""
         cypher = AES.new(KEY, AES.MODE_CBC, IV)
         crypto_cyphertext = cypher.encrypt(m09.pkcs7(MESSAGE))
         cyphertext = m10.encrypt_aes_cbc(KEY, IV, m09.pkcs7(MESSAGE))
         self.assertEqual(cyphertext, crypto_cyphertext)
 
-    def test_m10_aes_cbc_decrypt(self) -> None:
+    def test_aes_cbc_decrypt(self) -> None:
         """decrypt_aes_cbc matches Crypto.Cipher.AES"""
         cyphertext = b"x\x9b\xdb\xf8\x93\xae[x\x9a%\xb7\xffT\x1fc\xd5"
         cypher = AES.new(KEY, AES.MODE_CBC, IV)
@@ -220,7 +220,7 @@ class Test10(unittest.TestCase):
         plaintext = m10.decrypt_aes_cbc(KEY, IV, cyphertext)
         self.assertEqual(plaintext, crypto_plaintext)
 
-    def test_m10_aes_cbc_symmetry(self) -> None:
+    def test_aes_cbc_symmetry(self) -> None:
         """decrypt_aes_cbc inverts encrypt_aes_cbc"""
         m = m09.pkcs7(MESSAGE)
         cyphertext = m10.encrypt_aes_cbc(KEY, IV, m)
@@ -230,7 +230,7 @@ class Test10(unittest.TestCase):
 class Test11(unittest.TestCase):
     """An ECB/CBC detection oracle"""
 
-    def test_m11_detect_ecb(self) -> None:
+    def test_detect_ecb(self) -> None:
         """Detect ECB"""
         for _ in range(10):
             cyphertext = m11.encryption_oracle(MESSAGE * 3)
@@ -239,15 +239,15 @@ class Test11(unittest.TestCase):
 class Test12(unittest.TestCase):
     """Byte-at-a-time ECB decryption (Simple)"""
 
-    def test_m12_blocksize(self) -> None:
+    def test_blocksize(self) -> None:
         """Detect blocksize"""
         self.assertEqual(m12.blocksize(m12.oracle), 16)
 
-    def test_m12_len_string(self) -> None:
+    def test_len_string(self) -> None:
         """Detect string length"""
         self.assertEqual(m12.len_string(m12.oracle), 138)
 
-    def test_m12_break_ecb(self) -> None:
+    def test_break_ecb(self) -> None:
         """Break ECB"""
         self.assertEqual(m12.break_ecb(m12.oracle).split(b"\n")[0],
                          b"Rollin' in my 5.0")
@@ -255,7 +255,7 @@ class Test12(unittest.TestCase):
 class Test13(unittest.TestCase):
     """ECB cut-and-paste"""
 
-    def test_m13_end_to_end(self) -> None:
+    def test_ecb_cut_and_paste_end_to_end(self) -> None:
         """Forge cookie with ECB cut-and-paste"""
         email = "fake@mail.com"
         admin_cookie = m13.rewrite_cookie(email)
@@ -266,25 +266,25 @@ class Test13(unittest.TestCase):
 class Test14(unittest.TestCase):
     """Byte-at-a-time ECB decryption (Harder)"""
 
-    def test_m14_end_to_end(self) -> None:
+    def test_byte_at_a_time_ecb_decryption_attack(self) -> None:
         """End-to-end byte-at-a-time ECB decryption (harder)"""
         self.assertTrue(m14.break_ecb(m14.oracle))
 
 class Test15(unittest.TestCase):
     """PKCS#7 padding validation"""
 
-    def test_m15_equal_pkcs7_padding(self) -> None:
+    def test_equal_pkcs7_padding(self) -> None:
         """pkcs7 pads correctly"""
         message = b"ICE ICE BABY"
         self.assertEqual(m09.pkcs7(message), m15.pkcs7(message))
 
-    def test_m15_valid_pkcs7_padding(self) -> None:
+    def test_valid_pkcs7_padding(self) -> None:
         """de_pkcs7 validates for correct padding"""
         s = b"ICE ICE BABY"
         s_pad = m09.pkcs7(s)
         self.assertEqual(s, m15.de_pkcs7(s_pad))
 
-    def test_m15_invalid_pkcs7_padding(self) -> None:
+    def test_invalid_pkcs7_padding(self) -> None:
         """de_pkcs7 throws for incorrect padding"""
         s_pad = b"ICE ICE BABY\x01\x02\x03\x04"
         self.assertRaises(m15.PKCS7PaddingError, m15.de_pkcs7, s_pad)
@@ -294,7 +294,7 @@ class Test15(unittest.TestCase):
 class Test16(unittest.TestCase):
     """CBC bitflipping attacks"""
 
-    def test_m16_cbc_bitflipping_attack(self) -> None:
+    def test_cbc_bitflipping_attack(self) -> None:
         """End-to-end CBC bitflipping attack"""
         plaintext = bytes(16) + b"00000:admin<true"
         cyphertext = m16.oracle(plaintext)
@@ -304,7 +304,7 @@ class Test16(unittest.TestCase):
 class Test17(unittest.TestCase):
     """The CBC padding oracle"""
 
-    def test_m17_end_to_end(self) -> None:
+    def test_cbc_padding_oracle_attack(self) -> None:
         """End-to-end attack on the CBC padding oracle"""
         c = m17.cbc_oracle()
         m = m17.attack(c)
@@ -313,7 +313,7 @@ class Test17(unittest.TestCase):
 class Test18(unittest.TestCase):
     """Implement CTR, the stream cipher mode"""
 
-    def test_m18_aes_ctr(self) -> None:
+    def test_aes_ctr(self) -> None:
         """aes_ctr matches Crypto.Cipher.AES"""
         ctr = Counter.new(128, initial_value=0)
         cypher = AES.new(KEY, mode=AES.MODE_CTR, counter=ctr)
@@ -321,7 +321,7 @@ class Test18(unittest.TestCase):
         cyphertext = m18.aes_ctr(MESSAGE, KEY)
         self.assertEqual(cyphertext, crypto_cyphertext)
 
-    def test_m18_aes_ctr_symmetry(self) -> None:
+    def test_aes_ctr_symmetry(self) -> None:
         """aes_ctr is symmetric"""
         cyphertext = m18.aes_ctr(MESSAGE, KEY)
         plaintext = m18.aes_ctr(cyphertext, KEY)
@@ -330,7 +330,7 @@ class Test18(unittest.TestCase):
 class Test21(unittest.TestCase):
     """Implement the MT19937 Mersenne Twister RNG"""
 
-    def test_m21_mersenne_twister(self) -> None:
+    def test_mersenne_twister(self) -> None:
         """MT19937 returns a known good value"""
         # https://oeis.org/A221557
         mt = m21.MT19937(5489)
@@ -340,14 +340,14 @@ class Test22(unittest.TestCase):
     """Crack an MT19937 seed"""
 
     @unittest.skip("Extremely long test")
-    def test_m22_end_to_end(self) -> None:
+    def test_crack_mt19937_seed(self) -> None:
         """Crack an MT19937 seed, end-to-end"""
         r = m22.sleep_mersenne()
         seed = m22.crack_seed(r)
         clone = m21.MT19937(seed)
         self.assertEqual(clone.random(), r)
 
-    def test_m22_crack_artificial_seed(self) -> None:
+    def test_crack_artificial_mt19937_seed(self) -> None:
         """Crack an artificial MT19937 seed"""
         seed = int(time.time()) - 1
         r = m21.MT19937(seed).random()
@@ -357,7 +357,7 @@ class Test22(unittest.TestCase):
 class Test23(unittest.TestCase):
     """Clone an MT19937 RNG from its output"""
 
-    def test_m23_clone_mt(self) -> None:
+    def test_clone_mt(self) -> None:
         """mt_clone clones an MT19937 instance"""
         mt = m21.MT19937(5489)
         mt_clone = m23.clone_mt(mt)
@@ -366,12 +366,12 @@ class Test23(unittest.TestCase):
 class Test24(unittest.TestCase):
     """Create the MT19937 stream cipher and break it"""
 
-    def test_m24_verify_mt19937_crypt(self) -> None:
+    def test_verify_mt19937_crypt(self) -> None:
         """Verify MT19937 steam cipher encryption"""
         self.assertTrue(m24.verify_mt19937_crypt(bytes(10), 0xffff))
 
     @unittest.skip("Long test")
-    def test_m24_crack_mt19937(self) -> None:
+    def test_crack_mt19937_crypt(self) -> None:
         """Get MT19937 stream cipher seed"""
         seed = getrandbits(16)
         prefix = bytes(getrandbits(8) for i in range(randint(0, 100)))
@@ -380,7 +380,7 @@ class Test24(unittest.TestCase):
         found_seed = m24.crack_mt19937(cyphertext)
         self.assertEqual(found_seed, seed)
 
-    def test_m24_crack_mt19937_contrived(self) -> None:
+    def test_crack_mt19937_crypt_contrived(self) -> None:
         """Given contrived cyphertext, crack MT19937 stream cypher seed"""
         cyphertext = b"d\xaa\xcd\t"
         seed = m24.crack_mt19937(cyphertext)
@@ -389,7 +389,7 @@ class Test24(unittest.TestCase):
 class Test25(unittest.TestCase):
     """Break "random access read/write" AES CTR"""
 
-    def test_m25_end_to_end(self) -> None:
+    def test_aes_ctr_rarw_attack(self) -> None:
         """AES-CTR random access read/write attack"""
         c = m18.aes_ctr(MESSAGE, m25.RANDOM_KEY)
         m_prime = m25.break_rarw(c)
@@ -398,7 +398,7 @@ class Test25(unittest.TestCase):
 class Test26(unittest.TestCase):
     """CTR bitflipping"""
 
-    def test_m26_ctr_bitflipping(self) -> None:
+    def test_ctr_bitflipping(self) -> None:
         """CTR bitflipping attack"""
         plaintext = bytes(5) + b":admin<true"
         cyphertext = m26.oracle(plaintext)
@@ -408,7 +408,7 @@ class Test26(unittest.TestCase):
 class Test27(unittest.TestCase):
     """Recover the key from CBC with IV = Key"""
 
-    def test_m27_end_to_end(self) -> None:
+    def test_recover_cbc_key_with_equal_key_iv(self) -> None:
         """CBC key recovery with IV = key"""
         c = m27.bad_cbc_encryption(MESSAGE * 3)
         k = m27.cbc_iv_key(c)
@@ -417,14 +417,14 @@ class Test27(unittest.TestCase):
 class Test28(unittest.TestCase):
     """Implement a SHA-1 keyed MAC"""
 
-    def test_m28_sha1(self) -> None:
+    def test_sha1(self) -> None:
         """SHA1 matches hashlib.sha1"""
         m = b"digest me" * 512
         h = hashlib.sha1(m).hexdigest()
         h_prime = m28.SHA1().new(m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_empty_message(self) -> None:
+    def test_sha1_empty_message(self) -> None:
         """SHA1 of empty message matches empty hash"""
         m = b""
         h = []
@@ -444,7 +444,7 @@ class Test28(unittest.TestCase):
 
         self.assertEqual(set(h), set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
 
-    def test_m28_sha1_long_input(self) -> None:
+    def test_sha1_long_input(self) -> None:
         """SHA1 of variable message length matches hashlib.sha1"""
         for i in range(513):
             m = bytes(i)
@@ -452,7 +452,7 @@ class Test28(unittest.TestCase):
             h_prime = m28.SHA1().new(m).hexdigest()
             self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_mac(self) -> None:
+    def test_sha1_mac(self) -> None:
         """sha1_mac matches hashlib.sha1"""
         m = b"digest me" * 512
         k = b"it is authentic"
@@ -460,7 +460,7 @@ class Test28(unittest.TestCase):
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_mac_empty_message(self) -> None:
+    def test_sha1_mac_empty_message(self) -> None:
         """sha1_mac with empty message matches hashlib.sha1"""
         m = b""
         k = b"it is authentic"
@@ -468,7 +468,7 @@ class Test28(unittest.TestCase):
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_mac_empty_key(self) -> None:
+    def test_sha1_mac_empty_key(self) -> None:
         """sha1_mac with empty key matches hashlib.sha1"""
         m = b"not very authenticated"
         k = b""
@@ -476,28 +476,28 @@ class Test28(unittest.TestCase):
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_mac_empty_message_and_key(self) -> None:
+    def test_sha1_mac_empty_message_and_key(self) -> None:
         """sha1_mac with empty message and key matches hashlib.sha1"""
         m, k = b"", b""
         h = hashlib.sha1(k + m).hexdigest()
         h_prime = m28.SHA1().new(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m28_sha1_mac_cascade(self) -> None:
+    def test_sha1_mac_cascade(self) -> None:
         """sha1_mac cannot be tampered with"""
         m = b"digest me"
         m_prime = b"digest he"
         k = b"it is authentic"
         self.assertNotEqual(m28.sha1_mac(m, k), m28.sha1_mac(m_prime, k))
 
-    def test_m28_sha1_mac_different_key(self) -> None:
+    def test_sha1_mac_different_key(self) -> None:
         """sha1_mac cannot authenticate with different key"""
         m = b"digest me"
         k = b"it is authentic"
         k_prime = b"inauthentic"
         self.assertNotEqual(m28.sha1_mac(m, k), m28.sha1_mac(m, k_prime))
 
-    def test_m28_sha1_update(self) -> None:
+    def test_sha1_update(self) -> None:
         """SHA1 updates correctly"""
         m1 = b"A" * 512
         m2 = b"B" * 512
@@ -508,7 +508,7 @@ class Test28(unittest.TestCase):
         self.assertEqual(h.hexdigest(), h_combined.hexdigest())
         self.assertEqual(h.hexdigest(), hashlib.sha1(m1 + m2).hexdigest())
 
-    def test_m28_sha1_initialisation(self) -> None:
+    def test_sha1_initialisation(self) -> None:
         """SHA1 initialises correctly"""
         m = b"could be anything"
         h1 = m28.SHA1(m)
@@ -519,7 +519,7 @@ class Test28(unittest.TestCase):
         self.assertEqual(h2.hexdigest(), h3.hexdigest())
         self.assertEqual(h3.hexdigest(), h4.hexdigest())
 
-    def test_m28_copy(self) -> None:
+    def test_copy(self) -> None:
         """Copy SHA1 object"""
         h = m28.SHA1(MESSAGE)
         h_prime = h.copy()
@@ -528,7 +528,7 @@ class Test28(unittest.TestCase):
 class Test29(unittest.TestCase):
     """Break a SHA-1 keyed MAC using length extension"""
 
-    def test_m29_end_to_end(self) -> None:
+    def test_break_sha1_mac_length_extension(self) -> None:
         """Break a SHA-1 keyed MAC using length extension"""
         m = b"comment1=cooking%20MCs;userdata=foo;" \
             b"comment2=%20like%20a%20pound%20of%20bacon"
@@ -548,7 +548,7 @@ class Test29(unittest.TestCase):
 class Test30(unittest.TestCase):
     """Break an MD4 keyed MAC using length extension"""
 
-    def test_m30_md4_test_vectors(self) -> None:
+    def test_md4_test_vectors(self) -> None:
         """MD4 digests test vectors correctly (RFC1320)"""
         v = b""
         self.assertEqual(m30.MD4(v).hexdigest(), "31d6cfe0d16ae931b73c59d7e0c089c0")
@@ -566,7 +566,7 @@ class Test30(unittest.TestCase):
             b"1234567890123456789012345678901234567890"
         self.assertEqual(m30.MD4(v).hexdigest(), "e33b4ddc9c38f2199c3e7b164fcc0536")
 
-    def test_m30_md4_long_input(self) -> None:
+    def test_md4_long_input(self) -> None:
         """MD4 of variable message length matches Crypto.Hash.MD4"""
         for i in range(513):
             m = bytes(i)
@@ -574,7 +574,7 @@ class Test30(unittest.TestCase):
             h_prime = MD4.new(m)
             self.assertEqual(h.digest(), h_prime.digest())
 
-    def test_m30_md4_initialisation(self) -> None:
+    def test_md4_initialisation(self) -> None:
         """MD4 initialises correctly"""
         m = b"could be anything"
         h1 = m30.MD4(m)
@@ -585,7 +585,7 @@ class Test30(unittest.TestCase):
         self.assertEqual(h2.hexdigest(), h3.hexdigest())
         self.assertEqual(h3.hexdigest(), h4.hexdigest())
 
-    def test_m30_md4_update(self) -> None:
+    def test_md4_update(self) -> None:
         """MD4 updates correctly"""
         m1 = b"A" * 512
         m2 = b"B" * 512
@@ -595,7 +595,7 @@ class Test30(unittest.TestCase):
         h_combined = m30.MD4().new(m1 + m2)
         self.assertEqual(h.hexdigest(), h_combined.hexdigest())
 
-    def test_m30_md4_mac(self) -> None:
+    def test_md4_mac(self) -> None:
         """md4_mac matches Crypto.Hash.MD4"""
         m = b"digest me" * 512
         k = b"it is authentic"
@@ -603,7 +603,7 @@ class Test30(unittest.TestCase):
         h_prime = m30.MD4(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m30_md4_mac_empty_message(self) -> None:
+    def test_md4_mac_empty_message(self) -> None:
         """md4_mac with empty message matches Crypto.Hash.MD4"""
         m = b""
         k = b"it is authentic"
@@ -611,7 +611,7 @@ class Test30(unittest.TestCase):
         h_prime = m30.MD4(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m30_md4_mac_empty_key(self) -> None:
+    def test_md4_mac_empty_key(self) -> None:
         """md4_mac with empty key matches Crypto.Hash.MD4"""
         m = b"not very authenticated"
         k = b""
@@ -619,51 +619,51 @@ class Test30(unittest.TestCase):
         h_prime = m30.MD4(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m30_md4_mac_empty_message_and_key(self) -> None:
+    def test_md4_mac_empty_message_and_key(self) -> None:
         """md4_mac with empty message and key matches Crypto.Hash.MD4"""
         m, k = b"", b""
         h = MD4.new(k + m).hexdigest()
         h_prime = m30.MD4(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
-    def test_m30_md4_mac_cascade(self) -> None:
+    def test_md4_mac_cascade(self) -> None:
         """md4_mac cannot be tampered with"""
         m = b"digest me"
         m_prime = b"digest he"
         k = b"it is authentic"
         self.assertNotEqual(m30.md4_mac(m, k), m30.md4_mac(m_prime, k))
 
-    def test_m30_md4_mac_different_key(self) -> None:
+    def test_md4_mac_different_key(self) -> None:
         """md4_mac cannot authenticate with different key"""
         m = b"digest me"
         k = b"it is authentic"
         k_prime = b"inauthentic"
         self.assertNotEqual(m30.md4_mac(m, k), m30.md4_mac(m, k_prime))
 
-    def test_m30_copy(self) -> None:
+    def test_md4_copy(self) -> None:
         """Copy MD4 object"""
         h = m30.MD4(MESSAGE)
         h_prime = h.copy()
         self.assertEqual(h.digest(), h_prime.digest())
 
-    def test_m30_state_from_hex(self) -> None:
+    def test_md4_state_from_hex(self) -> None:
         """Extract MD4 register from hex digest"""
         h = m30.MD4(b"fud for thought")
         register = m30.md4_state_from_hex(h.hexdigest())
         self.assertEqual(register, m30.md4_state_from_object(h))
 
-    def test_m30_state_from_binary(self) -> None:
+    def test_md4_state_from_binary(self) -> None:
         """Extract MD4 register from binary digest"""
         h = m30.MD4(b"fud for thought")
         register = m30.md4_state_from_binary(h.digest())
         self.assertEqual(register, m30.md4_state_from_object(h))
 
-    def test_m30_verify_md4_mac(self) -> None:
+    def test_verify_md4_mac(self) -> None:
         """Verify MD4 MAC"""
         mac = m30.md4_mac(MESSAGE, KEY)
         self.assertTrue(m30.verify_md4_mac(mac, MESSAGE, KEY))
 
-    def test_m30_md_padding(self) -> None:
+    def test_md_padding(self) -> None:
         """MD padding"""
         data = b"llllll"
         padding = m30.md_padding(data)
@@ -673,7 +673,7 @@ class Test30(unittest.TestCase):
                         + (8 * len(data)).to_bytes(8, "little")
         self.assertEqual(padding, padding_prime)
 
-    def test_m30_extend_md4(self) -> None:
+    def test_extend_md4(self) -> None:
         """Extended MD4 MAC forgery"""
         m = MESSAGE
         k = KEY
@@ -690,7 +690,7 @@ class Test30(unittest.TestCase):
 class Test31(unittest.TestCase):
     """Implement and break HMAC-SHA1 with an artificial timing leak"""
 
-    def test_m31_hmac_sha1(self) -> None:
+    def test_hmac_sha1(self) -> None:
         """hmac_sha1 matches hmac.new(k, m, sha1)"""
         k = KEY
         m = MESSAGE
@@ -698,7 +698,7 @@ class Test31(unittest.TestCase):
         h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
-    def test_m31_hmac_sha1_large_key(self) -> None:
+    def test_hmac_sha1_large_key(self) -> None:
         """hmac_sha1 with large key"""
         k = 128 * KEY
         m = MESSAGE
@@ -706,7 +706,7 @@ class Test31(unittest.TestCase):
         h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
-    def test_m31_hmac_sha1_equal_sized_key(self) -> None:
+    def test_hmac_sha1_equal_sized_key(self) -> None:
         """hmac_sha1 with large key"""
         k = bytes(64)
         m = MESSAGE
@@ -714,31 +714,31 @@ class Test31(unittest.TestCase):
         h_prime = hmac.new(k, m, hashlib.sha1)
         self.assertEqual(h.digest(), h_prime.digest())
 
-    def test_m31_insecure_compare_identical(self) -> None:
+    def test_insecure_compare_identical(self) -> None:
         """insecure_compare identifies identical bytes"""
         a = b"identical bytes"
         self.assertTrue(m31.insecure_compare(a, a, 0))
 
-    def test_m31_insecure_compare_different(self) -> None:
+    def test_insecure_compare_different(self) -> None:
         """insecure_compare distinguishes different bytes"""
         a = b"different bytes"
         b = b"different bytez"
         self.assertFalse(m31.insecure_compare(a, b, 0))
 
-    def test_m31_insecure_compare_different_size(self) -> None:
+    def test_insecure_compare_different_size(self) -> None:
         """insecure_compare raises for different sizes"""
         a = b"different"
         b = b"sizes"
         with self.assertRaises(IndexError):
             m31.insecure_compare(a, b, 0)
 
-    def test_m31_verify_hmac_sha1_hex(self) -> None:
+    def test_verify_hmac_sha1_hex(self) -> None:
         """verify HMAC"""
         k, m = KEY, MESSAGE
         signature = m31.hmac_sha1(k, m).hexdigest().encode()
         self.assertTrue(m31.verify_hmac_sha1_hex(m, signature, k, 0))
 
-    def test_m31_instantiate_listener(self) -> None:
+    def test_instantiate_listener(self) -> None:
         """Instantiate listener"""
         local_server = ("localhost", 9131)
         listener = m31.HMACListener(local_server, KEY, delay=0.025)
@@ -747,7 +747,7 @@ class Test31(unittest.TestCase):
         listener.stop()
 
     @unittest.skip("Extremely long test")
-    def test_m31_end_to_end(self) -> None:
+    def test_hmac_sha1_attack(self) -> None:
         """End-to-end HMAC-SHA1 attack (artificial timing leak)"""
         file_name = b"foo"
         key = get_random_bytes(16)
@@ -766,14 +766,14 @@ class Test31(unittest.TestCase):
 class Test32(unittest.TestCase):
     """Break HMAC-SHA1 with a slightly less artificial timing leak"""
 
-    def test_m32_instantiate_attack(self) -> None:
+    def test_instantiate_attack(self) -> None:
         """Instantiate the attack class"""
         local_server = ("localhost", 9132)
         hmac_attack = m32.HMACAttack(local_server, 10)
         self.assertTrue(hmac_attack)
 
     @unittest.skip("Extremely long test")
-    def test_m32_end_to_end(self) -> None:
+    def test_hmac_sha1_attack(self) -> None:
         """End-to-end HMAC-SHA1 attack (realistic timing leak)"""
         file_name = b"foo"
         key = get_random_bytes(16)
@@ -792,7 +792,7 @@ class Test32(unittest.TestCase):
 class Test33(unittest.TestCase):
     """Implement Diffie-Hellman"""
 
-    def test_m33_dh_key_exchange(self) -> None:
+    def test_dh_key_exchange(self) -> None:
         """Diffie-Hellman peers agree on shared secret"""
         s_a, s_b = m33.dh_key_exchange(PRIME, G)
         self.assertEqual(s_a, s_b)
@@ -801,12 +801,12 @@ class Test34(unittest.TestCase):
     """Implement a MITM key-fixing attack on Diffie-Hellman
        with parameter injection"""
 
-    def test_m34_dh_protocol(self) -> None:
+    def test_dh_protocol(self) -> None:
         """Diffie-Hellman peer receives message"""
         received_message = m34.dh_protocol(PRIME, G, MESSAGE)
         self.assertEqual(received_message, MESSAGE)
 
-    def test_m34_dh_parameter_injection(self) -> None:
+    def test_dh_parameter_injection(self) -> None:
         """Diffie-Hellman parameter injection intercepts message"""
         intercepted = m34.dh_parameter_injection(PRIME, G, MESSAGE)
         self.assertEqual(intercepted, MESSAGE)
@@ -819,22 +819,22 @@ class Test35(unittest.TestCase):
     def tearDown() -> None:
         gc.collect()
 
-    def test_m35_dh_protocol(self) -> None:
+    def test_dh_protocol(self) -> None:
         """Diffie-Hellman TCP peer receives message"""
         plaintext = m35.dh_protocol(PRIME, G, MESSAGE)
         self.assertEqual(plaintext, MESSAGE)
 
-    def test_m35_dh_malicious_g_is_1(self) -> None:
+    def test_dh_malicious_g_is_1(self) -> None:
         """Diffie-Hellman inject malicious parameter g = 1"""
         plaintext = m35.dh_malicious_g(PRIME, G, MESSAGE, 1)
         self.assertEqual(plaintext, MESSAGE)
 
-    def test_m35_dh_malicious_g_is_p(self) -> None:
+    def test_dh_malicious_g_is_p(self) -> None:
         """Diffie-Hellman inject malicious parameter g = p"""
         plaintext = m35.dh_malicious_g(PRIME, G, MESSAGE, PRIME)
         self.assertEqual(plaintext, MESSAGE)
 
-    def test_m35_dh_malicious_g_is_p_minus_1(self) -> None:
+    def test_dh_malicious_g_is_p_minus_1(self) -> None:
         """Diffie-Hellman inject malicious parameter g = p - 1"""
         plaintext = m35.dh_malicious_g(PRIME, G, MESSAGE, PRIME - 1)
         self.assertEqual(plaintext, MESSAGE)
@@ -842,13 +842,13 @@ class Test35(unittest.TestCase):
 class Test36(unittest.TestCase):
     """Implement Secure Remote Password (SRP)"""
 
-    def test_m36_client_pubkey(self) -> None:
+    def test_client_pubkey(self) -> None:
         """client-side public key"""
         carol = m36.Client(PRIME, "e@ma.il", "pw", 2, 3)
         carol.pubkey()
         self.assertEqual(carol.A, carol.pubkey())
 
-    def test_m36_server_pubkey(self) -> None:
+    def test_server_pubkey(self) -> None:
         """server-side public key"""
         parameters = {"N": PRIME,
                       "g": 2,
@@ -862,7 +862,7 @@ class Test36(unittest.TestCase):
         steve.pubkey()
         self.assertEqual(steve.B, steve.pubkey())
 
-    def test_m36_bad_email(self) -> None:
+    def test_bad_email(self) -> None:
         """mismatched emails"""
         parameters = {"N": PRIME,
                       "g": 2,
@@ -876,7 +876,7 @@ class Test36(unittest.TestCase):
         self.assertRaises(ValueError,
                           lambda: steve.receive_email_pubkey(bad_parameters))
 
-    def test_m36_bad_hmac(self) -> None:
+    def test_bad_hmac(self) -> None:
         """hmacs don't match"""
         parameters = {"N": PRIME,
                       "g": 2,
@@ -894,7 +894,7 @@ class Test36(unittest.TestCase):
         response = steve.receive_hmac("deadbeef")
         self.assertFalse(response)
 
-    def test_m36_srp_protocol(self) -> None:
+    def test_srp_protocol(self) -> None:
         """SRP protocol server verification"""
         carol = m36.Client(m36.prime(), email="not@real.email",
                            password="submarines")
@@ -905,7 +905,7 @@ class Test36(unittest.TestCase):
 class Test37(unittest.TestCase):
     """Break SRP with a zero key"""
 
-    def test_m37_srp_zero_key(self) -> None:
+    def test_srp_zero_key(self) -> None:
         """Break SRP with a zero key"""
         carol = m37.CustomKeyClient(m36.prime(), email="not@real.email",
                                     password="submarines")
@@ -914,21 +914,22 @@ class Test37(unittest.TestCase):
         result = m36.srp_protocol(carol, steve)
         self.assertTrue(result)
 
-    def test_m37_srp_multiple_prime_key(self) -> None:
+    def test_srp_multiple_prime_key(self) -> None:
         """Break SRP with a zero key"""
         prime = m36.prime()
         for i in range(1, 4):
-            carol = m37.CustomKeyClient(prime, email="not@real.email",
-                                        password="submarines")
-            steve = m36.Server()
-            carol.A = i * prime
-            result = m36.srp_protocol(carol, steve)
-            self.assertTrue(result)
+            with self.subTest(i=i):
+                carol = m37.CustomKeyClient(prime, email="not@real.email",
+                                            password="submarines")
+                steve = m36.Server()
+                carol.A = i * prime
+                result = m36.srp_protocol(carol, steve)
+                self.assertTrue(result)
 
 class Test38(unittest.TestCase):
     """Offline dictionary attack on simplified SRP"""
 
-    def test_m38_simple_srp(self) -> None:
+    def test_simple_srp(self) -> None:
         """Implement simple SRP"""
         client = m38.SimpleClient(PRIME, G,
                                   username="srp-client@cryptopals.com",
@@ -937,7 +938,7 @@ class Test38(unittest.TestCase):
         self.assertTrue(m38.simple_srp(client, server))
 
     @unittest.skip("Requires a wordlist file")
-    def test_m38_mitm_simple_srp(self) -> None:
+    def test_mitm_simple_srp(self) -> None:
         """Crack simple SRP (with wordlist file)"""
         prime = m36.prime()
         password = "aardvark"
@@ -950,7 +951,7 @@ class Test38(unittest.TestCase):
         self.assertEqual(candidate_password, password)
 
     @mock.patch.object(m38.EvilServer, "_words")
-    def test_m38_mitm_simple_srp_no_io(self, _words: mock.Mock) -> None:
+    def test_mitm_simple_srp_no_io(self, _words: mock.Mock) -> None:
         """Crack simple SRP"""
         prime = m36.prime()
 
@@ -968,32 +969,32 @@ class Test38(unittest.TestCase):
 class Test39(unittest.TestCase):
     """Implement RSA"""
 
-    def test_m39_gcd(self) -> None:
+    def test_gcd(self) -> None:
         """Sanity check Euclidean GCD"""
         interval = range(-10, 10)
         for a in interval:
             for b in interval:
                 self.assertEqual(m39.gcd(a, b), math.gcd(a, b))
 
-    def test_m39_lcm(self) -> None:
+    def test_lcm(self) -> None:
         """Sanity check LCM"""
         interval = range(-10, 10)
         for a in interval:
             for b in interval:
                 self.assertEqual(m39.lcm(a, b), math.lcm(a, b))
 
-    def test_m39_modular_inverse(self) -> None:
+    def test_modular_inverse(self) -> None:
         """Calculate modular inverse"""
         self.assertEqual(m39.invmod(3, 7), 5)
         self.assertEqual(m39.invmod(17, 3120), 2753)
         self.assertEqual(m39.invmod(17, 3120), pow(17, -1, 3120))
 
-    def test_m39_modular_inverse_does_not_exist(self) -> None:
+    def test_modular_inverse_does_not_exist(self) -> None:
         """Calculate modular inverse when it doesn't exist"""
         with self.assertRaises(ValueError):
             m39.invmod(3, 3)
 
-    def test_m39_keygen_size(self) -> None:
+    def test_keygen_size(self) -> None:
         """Sanity check keypair for bit size and modulus"""
         e = 3
         size = 128
@@ -1003,7 +1004,7 @@ class Test39(unittest.TestCase):
         self.assertEqual(public.exponent, e)
         self.assertGreater(private.exponent, e)
 
-    def test_m39_integer_encryption(self) -> None:
+    def test_integer_encryption(self) -> None:
         """RSA encryption and decryption of integer data"""
         public, private = m39.keygen(128)
         m = 42
@@ -1011,7 +1012,7 @@ class Test39(unittest.TestCase):
         m_prime = m39.decrypt_int(c, private)
         self.assertEqual(m, m_prime)
 
-    def test_m39_binary_encryption(self) -> None:
+    def test_binary_encryption(self) -> None:
         """RSA encryption and decryption of binary data"""
         public, private = m39.keygen(128)
         m = MESSAGE
@@ -1019,7 +1020,7 @@ class Test39(unittest.TestCase):
         m_prime = m39.decrypt(c, private)
         self.assertEqual(m, m_prime)
 
-    def test_m39_small_modulus(self) -> None:
+    def test_small_modulus(self) -> None:
         """RSA encryption fails with small modulus"""
         size = 128
         public, _ = m39.keygen(size)
@@ -1030,35 +1031,35 @@ class Test39(unittest.TestCase):
 class Test40(unittest.TestCase):
     """Implement an e = 3 RSA broadcast attack"""
 
-    def test_m40_integer_root(self) -> None:
+    def test_integer_root(self) -> None:
         """Find the integer nth root"""
         x = 4
         e = 6
         self.assertEqual(m40.integer_root(x ** e, e), x)
 
-    def test_m40_integer_root_of_zero(self) -> None:
+    def test_integer_root_of_zero(self) -> None:
         """Calculate the integer square root of 0"""
         self.assertEqual(m40.integer_root(0, 2), 0)
 
-    def test_m40_zeroth_root(self) -> None:
+    def test_zeroth_root(self) -> None:
         """Calculate the 0th root"""
         with self.assertRaises(ZeroDivisionError):
             m40.integer_root(2, 0)
 
-    def test_m40_crt(self) -> None:
+    def test_crt(self) -> None:
         """Calculate CRT for a simple system"""
         a = [0, 3, 4]
         n = [3, 4, 5]
         self.assertEqual(m40.crt(a, n), 39)
 
-    def test_m40_crt_impossible_system(self) -> None:
+    def test_crt_impossible_system(self) -> None:
         """Calculate CRT when arguments don't define a system"""
         a = [0]
         n = [4, 5]
         with self.assertRaises(ValueError):
             m40.crt(a, n)
 
-    def test_m40_broadcast(self) -> None:
+    def test_broadcast(self) -> None:
         """Break RSA with Håstad's broadcast attack"""
         k = []
         c = []
@@ -1073,7 +1074,7 @@ class Test40(unittest.TestCase):
 class Test41(unittest.TestCase):
     """Implement unpadded message recovery oracle"""
 
-    def test_m41_repeated_decryption(self) -> None:
+    def test_repeated_decryption(self) -> None:
         """Try to decrypt multiple times"""
         server = m41.DecryptionServer(size=512)
         c = m39.encrypt(MESSAGE, server.public_key)
@@ -1081,7 +1082,7 @@ class Test41(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             server.decrypt(c)
 
-    def test_m41_recover_message(self) -> None:
+    def test_recover_message(self) -> None:
         """Recover plaintext via transformation"""
         server = m41.DecryptionServer(size=512)
         c = m39.encrypt(MESSAGE, server.public_key)
@@ -1092,7 +1093,7 @@ class Test41(unittest.TestCase):
 class Test42(unittest.TestCase):
     """Bleichenbacher's e = 3 RSA Attack"""
 
-    def test_m42_pkcs1v15_pad(self) -> None:
+    def test_pkcs1v15_pad(self) -> None:
         """Pad a message with PKCS#1 v1.5"""
         eb = m42.pkcs1v15_pad(MESSAGE, 256)
         self.assertEqual(eb[0], 0)
@@ -1101,29 +1102,29 @@ class Test42(unittest.TestCase):
             self.assertNotEqual(element, 0)
         self.assertIn(0, eb[10:])
 
-    def test_m42_pkcs1v15_pad_bad_type(self) -> None:
+    def test_pkcs1v15_pad_bad_type(self) -> None:
         """Pad a message with non-existent block type"""
         with self.assertRaises(ValueError):
             m42.pkcs1v15_pad(MESSAGE, 256, block_type=3)
 
-    def test_m42_pkcs1v15_pad_message_too_big(self) -> None:
+    def test_pkcs1v15_pad_message_too_big(self) -> None:
         """Pad a message that's too big for the size"""
         with self.assertRaises(ValueError):
             m42.pkcs1v15_pad(MESSAGE, 128)
 
-    def test_m42_sign_and_verify(self) -> None:
+    def test_sign_and_verify(self) -> None:
         """Sign a message and verify the signature"""
         keypair = m39.keygen(bits=512)
         s = m42.sign(MESSAGE, keypair.private)
         self.assertTrue(m42.verify(MESSAGE, s, keypair.public))
 
-    def test_m42_verify_no_match(self) -> None:
+    def test_verify_no_match(self) -> None:
         """Try to verify an obviously bad signature"""
         keypair = m39.keygen(bits=512)
         fake_signature = 123456789012
         self.assertFalse(m42.verify(MESSAGE, fake_signature, keypair.public))
 
-    def test_m42_forge_signature(self) -> None:
+    def test_forge_signature(self) -> None:
         """BB'06 via cube root"""
         m = MESSAGE
         keypair = m39.keygen(bits=1024)
@@ -1136,10 +1137,11 @@ class Test43(unittest.TestCase):
     @staticmethod
     @functools.cache
     def data() -> dict[str, str]:
+        """Load data from file"""
         with open("data/43.txt") as data_fd:
             return json.load(data_fd)
 
-    def test_m43_verify_dsa_signature(self) -> None:
+    def test_verify_dsa_signature(self) -> None:
         """Sign a message and verify the DSA signature"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1149,7 +1151,7 @@ class Test43(unittest.TestCase):
         self.assertTrue(m43.verify(MESSAGE, signature,
                                    keypair.y, **parameters))
 
-    def test_m43_test_bad_dsa_signature(self) -> None:
+    def test_test_bad_dsa_signature(self) -> None:
         """Verify a message with a bad signature"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1159,14 +1161,14 @@ class Test43(unittest.TestCase):
         bad_sig = m43.DSASignature(1, parameters["q"])
         self.assertFalse(m43.verify(MESSAGE, bad_sig, 0, **parameters))
 
-    def test_m43_test_vectors(self) -> None:
+    def test_test_vectors(self) -> None:
         """Check given messages hashes as expected"""
         data = self.data()
         m = data["m"].encode()
         h_m = m39.to_int(m28.SHA1(m).digest())
         self.assertEqual(h_m, 0xd2d0714f014a9784047eaeccf956520045c45265)
 
-    def test_m43_validate_expected_good_signature(self) -> None:
+    def test_validate_expected_good_signature(self) -> None:
         """Check given message has valid signature"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1179,7 +1181,7 @@ class Test43(unittest.TestCase):
         self.assertTrue(m43.verify(m, signature, y, **parameters))
 
     @unittest.skip("Long test")
-    def test_m43_brute_force_recover_key(self) -> None:
+    def test_brute_force_recover_key(self) -> None:
         """Recover private key by guessing random subkey k"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1199,7 +1201,7 @@ class Test43(unittest.TestCase):
         except RuntimeError:
             self.fail("Failed to recover private key from DSA signature")
 
-    def test_m43_brute_force_recover_key_with_known_k(self) -> None:
+    def test_brute_force_recover_key_with_known_k(self) -> None:
         """Recover private key by providing known subkey k"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1219,7 +1221,7 @@ class Test43(unittest.TestCase):
         except RuntimeError:  # pragma: no cover
             self.fail("Failed to recover private key from DSA signature")
 
-    def test_m43_brute_force_recover_key_with_no_valid_k(self) -> None:
+    def test_brute_force_recover_key_with_no_valid_k(self) -> None:
         """Try to recover private key without valid k"""
         data = self.data()
         parameters = {k: int(data[k], 16) for k in ["p", "q", "g"]}
@@ -1233,7 +1235,7 @@ class Test43(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             m43.brute_force_recover_key(m, signature, y, 0, 1, **parameters)
 
-    def test_m43_known_x(self) -> None:
+    def test_known_x(self) -> None:
         """Check x hashes to expected value"""
         x = 125489817134406768603130881762531825565433175625
         h_x = m39.to_int(m28.SHA1(hex(x)[2:].encode()).digest())
@@ -1242,14 +1244,14 @@ class Test43(unittest.TestCase):
 class Test44(unittest.TestCase):
     """DSA nonce recovery from repeated nonce"""
 
-    def test_m44_verify_input(self) -> None:
+    def test_verify_input(self) -> None:
         """Check input messages have expected hashes"""
         messages = m44.get_messages()
         for message in messages:
             h_m = m39.to_int(m28.SHA1(message["msg"]).digest())
             self.assertEqual(h_m, message["m"])
 
-    def test_m44_signatures_validate(self) -> None:
+    def test_signatures_validate(self) -> None:
         """Validate message signatures"""
         y = m44.PUBLIC_KEY
         parameters = m44.get_parameters()
@@ -1260,14 +1262,14 @@ class Test44(unittest.TestCase):
             signature = m43.DSASignature(message["r"], message["s"])
             self.assertTrue(m43.verify(message["msg"], signature, y, p, q, g))
 
-    def test_m44_candidate_messages_exist(self) -> None:
+    def test_candidate_messages_exist(self) -> None:
         """Check inputs are vulnerable"""
         messages = m44.get_messages()
         message_groups = m44.group_by_repeated_k(messages)
         groups_of_more_than_one = [x for x in message_groups if len(x) > 1]
         self.assertTrue(len(groups_of_more_than_one) > 1)
 
-    def test_m44_recover_private_key(self) -> None:
+    def test_recover_private_key(self) -> None:
         """Check x hashes to expected value"""
         messages = m44.get_messages()
         parameters = m44.get_parameters()
@@ -1286,7 +1288,7 @@ class Test44(unittest.TestCase):
         h_x = m39.to_int(m28.SHA1(hex(x)[2:].encode()).digest())
         self.assertEqual(h_x, 0xca8f6f7c66fa362d40760d135b763eb8527d3d52)
 
-    def test_m44_consistent_x(self) -> None:
+    def test_consistent_x(self) -> None:
         """Check x is independent of mesage pair choice"""
         messages = m44.get_messages()
         parameters = m44.get_parameters()
@@ -1328,7 +1330,7 @@ class Test44(unittest.TestCase):
 class Test45(unittest.TestCase):
     """DSA parameter tampering"""
 
-    def test_m45_g_0(self) -> None:
+    def test_g_0(self) -> None:
         """Forge signature with g = 0"""
         p, q, _ = m44.get_parameters().values()
         g = 0
@@ -1347,7 +1349,7 @@ class Test45(unittest.TestCase):
         self.assertTrue(m45.verify_relaxed(m_1, signature_2, keypair.y, p, q, g))
         self.assertTrue(m45.verify_relaxed(m_2, signature_1, keypair.y, p, q, g))
 
-    def test_m45_g_1(self) -> None:
+    def test_g_1(self) -> None:
         """Forge signature with g = 1 mod p"""
         p, q, _ = m44.get_parameters().values()
         g = p + 1
@@ -1368,7 +1370,7 @@ class Test45(unittest.TestCase):
 
         self.assertTrue(m43.verify(MESSAGE, signature_1, keypair.y, p, q, g))
 
-    def test_m45_magic_signature(self) -> None:
+    def test_magic_signature(self) -> None:
         """Forge signature with magic"""
         p, q, g = m44.get_parameters().values()
 
@@ -1387,7 +1389,7 @@ class Test45(unittest.TestCase):
 class Test46(unittest.TestCase):
     """RSA parity oracle"""
 
-    def test_m46_parity(self) -> None:
+    def test_parity(self) -> None:
         """Test parity oracle"""
         oracle = m46.RSAParityOracle(32)
         c_even = m39.encrypt_int(2, oracle.pubkey)
@@ -1395,7 +1397,7 @@ class Test46(unittest.TestCase):
         self.assertTrue(oracle.is_even(c_even))
         self.assertFalse(oracle.is_even(c_odd))
 
-    def test_m46_attack_parity_oracle(self) -> None:
+    def test_attack_parity_oracle(self) -> None:
         """Decrypt via parity oracle"""
         oracle = m46.RSAParityOracle(128)
         c = m39.encrypt(MESSAGE, oracle.pubkey)
@@ -1407,13 +1409,13 @@ class Test47(unittest.TestCase):
 
     @staticmethod
     def static_keygen() -> m39.RSAKeyPair:
-        """Generates a key-pair for fast attack"""
+        """Generate a key-pair for fast attack"""
         n = 0xb4eaed55a442a4957ed84162c4523e24ec2bc7984fe56690cb8911bf9d687d85
         e = 0x1e27278e460b1b6e3fceb590760db505c7fd0ccbfa74d419835688126e860f2d
         return m39.RSAKeyPair(m39.RSAKey(exponent=3, modulus=n),
                               m39.RSAKey(exponent=e, modulus=n))
 
-    def test_m47_padding_ok(self) -> None:
+    def test_padding_ok(self) -> None:
         """Test oracle padding verification"""
         oracle = m47.RSAPaddingOracle()
         m = m42.pkcs1v15_pad(data=MESSAGE,
@@ -1423,7 +1425,7 @@ class Test47(unittest.TestCase):
         self.assertTrue(oracle.padding_ok(c))
 
     @unittest.skip("Potentially long test")
-    def test_m47_smallest_coefficient(self) -> None:
+    def test_smallest_coefficient(self) -> None:
         """Test step 2a: find smallest s_1"""
         oracle = m47.RSAPaddingOracle()
         n = oracle.pubkey.modulus
@@ -1441,7 +1443,7 @@ class Test47(unittest.TestCase):
         self.assertTrue(oracle.padding_ok(c_1))
 
     @unittest.skip("Potentially long test")
-    def test_m47_attack(self) -> None:
+    def test_bleichenbacker_pkcs_attack(self) -> None:
         """Bleichenbacker's PKCS#1 v1.5 attack"""
         oracle = m47.RSAPaddingOracle()
         m = m42.pkcs1v15_pad(data=MESSAGE,
@@ -1452,7 +1454,7 @@ class Test47(unittest.TestCase):
         m_prime = b"\x00" + m39.to_bytes(m_int)
         self.assertEqual(m_prime, m)
 
-    def test_m47_fast_attack(self) -> None:
+    def test_bleichenbacker_pkcs_fast_attack(self) -> None:
         """Bleichenbacker's PKCS#1 v1.5 attack with fast keypair"""
         fast_keypair = self.static_keygen()
         oracle = m47.RSAPaddingOracle()
@@ -1468,7 +1470,7 @@ class Test47(unittest.TestCase):
         m_prime = b"\x00" + m39.to_bytes(m_int)
         self.assertEqual(m_prime, m)
 
-    def test_m47_unpad_inverse(self) -> None:
+    def test_unpad_inverse(self) -> None:
         """Compare unpadded PKCS#1 v1.5 message to original"""
         m_padded = m42.pkcs1v15_pad(data=MESSAGE, bits=256, block_type=2)
         self.assertEqual(MESSAGE, m47.pkcs1v15_unpad(m_padded))
@@ -1530,6 +1532,7 @@ class Test50(unittest.TestCase):
     """Hashing with CBC-MAC"""
 
     def test_cbc_mac_test_vector(self) -> None:
+        """Ensure CBC-MAC returns the expected hash"""
         js = b"alert('MZA who was that?');\n"
         key = b"YELLOW SUBMARINE"
         iv = bytes(16)
@@ -1537,6 +1540,7 @@ class Test50(unittest.TestCase):
         self.assertEqual(mac.hex(), "296b8d7cb78a243dda4d0a61d33bbdd1")
 
     def test_forge_hash(self) -> None:
+        """Forge a hash over CBC-MAC"""
         m = b"alert('MZA who was that?');\n"
 
         m_prime = b"alert('Ayo, the Wu is back!');//"

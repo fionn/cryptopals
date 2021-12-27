@@ -2,6 +2,7 @@
 """Cryptopals tests"""
 
 import gc
+import io
 import hmac
 import time
 import math
@@ -64,6 +65,7 @@ import m46
 import m47
 import m49
 import m50
+import m51
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1548,6 +1550,23 @@ class Test50(unittest.TestCase):
 
         self.assertEqual(m49.cbc_mac(KEY, IV, m09.pkcs7(m)),
                          m49.cbc_mac(KEY, IV, forgery))
+
+class Test51(unittest.TestCase):
+    """Compression Ratio Side-Channel Attacks"""
+
+    m51.SESSION_ID = b"TmV2ZXIgcmV2ZWFsIHRoZSBXdS1UYW5nIFNlY3JldCE="
+
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_attack_stream_cipher_oracle(self, _: io.StringIO) -> None:
+        """CRIME attack on a stream cipher"""
+        session_id = m51.attack(m51.ctr_oracle)
+        self.assertEqual(session_id, m51.SESSION_ID)
+
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_attack_block_cipher_oracle(self, _: io.StringIO) -> None:
+        """CRIME attack on a block cipher"""
+        session_id = m51.attack(m51.cbc_oracle)
+        self.assertEqual(session_id, m51.SESSION_ID)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

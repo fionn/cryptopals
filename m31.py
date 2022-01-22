@@ -158,8 +158,7 @@ class HMACAttack:
                     self.base = bytearray.fromhex(sig_hex)
                     self.print_progress(sig_hex, delta, i)
 
-        raise RuntimeError("Could not determine HMAC, got {}"
-                           .format(self.base.hex()))
+        raise RuntimeError(f"Could not determine HMAC, got {self.base.hex()}")
 
 def main() -> None:
     file_name = b"foo"

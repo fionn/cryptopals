@@ -8,7 +8,8 @@ import threading
 import logging
 from typing import NamedTuple, Optional, Any
 
-from Crypto.Random.random import randrange, getrandbits
+from Crypto.Random import get_random_bytes
+from Crypto.Random.random import randrange
 
 from m09 import pkcs7, de_pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
@@ -167,7 +168,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
                      *self._peer.address)
 
     def send_message(self, message: bytes) -> None:
-        iv = bytes(getrandbits(8) for i in range(16))
+        iv = get_random_bytes(16)
         cyphertext = encrypt_aes_cbc(self._aes_key(), iv, pkcs7(message))
         self._send(cyphertext + iv, self._peer)
 

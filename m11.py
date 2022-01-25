@@ -2,7 +2,8 @@
 """An ECB/CBC detection oracle"""
 
 from Crypto.Cipher import AES
-from Crypto.Random.random import randrange, getrandbits
+from Crypto.Random import get_random_bytes
+from Crypto.Random.random import randrange
 
 from m08 import ecb_score
 from m09 import pkcs7
@@ -10,12 +11,12 @@ from m10 import encrypt_aes_cbc
 
 def encryption_oracle(plaintext: bytes) -> bytes:
     plaintext = bytes(randrange(5, 11)) + plaintext + bytes(randrange(5, 11))
-    plaintext = pkcs7(plaintext, 16)
+    plaintext = pkcs7(plaintext)
 
-    key = bytes(getrandbits(8) for i in range(16))
+    key = get_random_bytes(16)
 
     if randrange(2) == 0:
-        iv = bytes(getrandbits(8) for i in range(16))
+        iv = get_random_bytes(16)
         return encrypt_aes_cbc(key, iv, plaintext)
 
     cypher = AES.new(key, AES.MODE_ECB)

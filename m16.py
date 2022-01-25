@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """CBC bitflipping attacks"""
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m09 import pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def oracle(userdata: bytes) -> bytes:
     key = RANDOM_KEY

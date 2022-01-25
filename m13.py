@@ -2,11 +2,11 @@
 """ECB cut-and-paste"""
 
 from Crypto.Cipher import AES
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m09 import pkcs7, de_pkcs7
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def parse(string: str) -> dict[str, str]:
     cookie = {}

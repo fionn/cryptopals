@@ -7,12 +7,12 @@ from base64 import b64decode
 from typing import Callable
 
 from Crypto.Cipher import AES
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m09 import pkcs7, de_pkcs7
 from m11 import detect_ecb
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def oracle(plaintext: bytes) -> bytes:
     with open("data/12.txt", "r") as data_handle:

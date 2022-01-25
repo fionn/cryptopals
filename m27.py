@@ -3,13 +3,13 @@
 
 from typing import Optional
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m02 import fixed_xor
 from m09 import pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def ascii_compliant(plaintext: bytes) -> bool:
     for b in plaintext:

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """CTR bitflipping"""
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m09 import pkcs7
 from m16 import cbc_bitflip as ctr_bitflip
 from m18 import aes_ctr
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def oracle(userdata: bytes) -> bytes:
     prefix = b"comment1=cooking%20MCs;userdata="

@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
 """The CBC padding oracle"""
 
+from random import choice
 from base64 import b64decode
 
-from Crypto.Random.random import getrandbits, choice
+from Crypto.Random import get_random_bytes
 
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
 from m15 import pkcs7, de_pkcs7
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
-IV = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
+IV = get_random_bytes(16)
 
 def choose_plaintext() -> bytes:
     with open("data/17.txt", "r") as f:
         data = f.read().splitlines()
-    return pkcs7(b64decode(choice(data)))  # type: ignore
+    return b64decode(choice(data))
 
 def cbc_oracle() -> bytes:
-    plaintext = choose_plaintext()
+    plaintext = pkcs7(choose_plaintext())
     return encrypt_aes_cbc(RANDOM_KEY, IV, plaintext)
 
 def padding_oracle(cyphertext: bytes) -> bool:
-    key = RANDOM_KEY
-    iv = IV
-    plaintext = decrypt_aes_cbc(key, iv, cyphertext)
+    plaintext = decrypt_aes_cbc(RANDOM_KEY, IV, cyphertext)
     pad_length = plaintext[-1]
     return pad_length * bytes([pad_length]) == plaintext[-pad_length:]
 

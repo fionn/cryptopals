@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Implement a MITM key-fixing attack on Diffie-Hellman with parameter injection"""
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m09 import pkcs7, de_pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
@@ -37,7 +37,7 @@ class DHProtocolPeer(DHPeer):
         return SHA1(s.to_bytes(s.bit_length() // 8 + 1, "big")).digest()[:16]
 
     def send_message(self, message: bytes) -> None:
-        iv = bytes(getrandbits(8) for i in range(16))
+        iv = get_random_bytes(16)
         cyphertext = encrypt_aes_cbc(self._aes_key(), iv, pkcs7(message))
         self.peer.receive_message(cyphertext + iv)
 

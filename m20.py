@@ -4,13 +4,13 @@
 
 from base64 import b64decode
 
-from Crypto.Random.random import getrandbits
+from Crypto.Random import get_random_bytes
 
 from m02 import fixed_xor
 from m03 import break_single_byte_xor
 from m18 import aes_ctr
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
+RANDOM_KEY = get_random_bytes(16)
 
 def bulk_ctr(cyphertexts: list[bytes]) -> list[bytes]:
     return [aes_ctr(e, RANDOM_KEY) for e in cyphertexts]

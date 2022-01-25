@@ -5,14 +5,15 @@ from base64 import b64decode
 from typing import Callable
 
 from Crypto.Cipher import AES
-from Crypto.Random.random import getrandbits, randrange
+from Crypto.Random import get_random_bytes
+from Crypto.Random.random import randrange
 
 from m09 import pkcs7, de_pkcs7
 from m11 import detect_ecb
 from m12 import blocksize, len_string
 
-RANDOM_KEY = bytes(getrandbits(8) for i in range(16))
-RANDOM_PREFIX = bytes(getrandbits(8) for i in range(randrange(16)))
+RANDOM_KEY = get_random_bytes(16)
+RANDOM_PREFIX = get_random_bytes(randrange(16))
 
 def oracle(plaintext: bytes) -> bytes:
     prefix = RANDOM_PREFIX

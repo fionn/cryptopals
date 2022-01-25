@@ -201,7 +201,7 @@ class Test09(unittest.TestCase):
     def test_pad_big_block(self) -> None:
         """PKCS7 with blocksize too large"""
         blocksize = 256 + len(MESSAGE)
-        with self.assertRaises(m09.PKCS7Error):
+        with self.assertRaises(m09.PKCS7PaddingError):
             m09.pkcs7(MESSAGE, blocksize)
 
 class Test10(unittest.TestCase):
@@ -289,9 +289,9 @@ class Test15(unittest.TestCase):
     def test_invalid_pkcs7_padding(self) -> None:
         """de_pkcs7 throws for incorrect padding"""
         s_pad = b"ICE ICE BABY\x01\x02\x03\x04"
-        self.assertRaises(m15.PKCS7PaddingError, m15.de_pkcs7, s_pad)
+        self.assertRaises(m09.PKCS7PaddingError, m15.de_pkcs7, s_pad)
         s_pad = b"ICE ICE BABY\x05\x05\x05\x05"
-        self.assertRaises(m15.PKCS7PaddingError, m15.de_pkcs7, s_pad)
+        self.assertRaises(m09.PKCS7PaddingError, m15.de_pkcs7, s_pad)
 
 class Test16(unittest.TestCase):
     """CBC bitflipping attacks"""

@@ -731,7 +731,7 @@ class Test31(unittest.TestCase):
         """insecure_compare raises for different sizes"""
         a = b"different"
         b = b"sizes"
-        with self.assertRaises(IndexError):
+        with self.assertRaises(ValueError):
             m31.insecure_compare(a, b, 0)
 
     def test_verify_hmac_sha1_hex(self) -> None:

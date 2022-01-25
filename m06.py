@@ -4,9 +4,9 @@
 
 import base64
 
-import m02  # fixed_xor
-import m03  # break_single_byte_xor
-import m05  # repeating_key_xor
+from m02 import fixed_xor
+from m03 import break_single_byte_xor
+from m05 import repeating_key_xor
 
 def hamming_distance(s1: bytes, s2: bytes) -> int:
     if len(s1) != len(s2):
@@ -31,12 +31,12 @@ def key(cyphertext: bytes) -> bytes:
     keysize = find_keysize(cyphertext)
     blocks = [cyphertext[i:i + keysize]
               for i in range(0, len(cyphertext), keysize)]
-    blocks = [bytes(x) for x in list(zip(*blocks[0:-1]))]
-    plaintext = bytes([m03.break_single_byte_xor(x)[0] for x in blocks])
-    return m02.fixed_xor(plaintext, cyphertext[:len(plaintext)])
+    blocks = [bytes(x) for x in zip(*blocks[0:-1], strict=True)]
+    plaintext = bytes([break_single_byte_xor(x)[0] for x in blocks])
+    return fixed_xor(plaintext, cyphertext[:len(plaintext)])
 
 def break_repeating_key_xor(cyphertext: bytes) -> bytes:
-    return m05.repeating_key_xor(key(cyphertext), cyphertext)
+    return repeating_key_xor(key(cyphertext), cyphertext)
 
 def main() -> None:
     with open("data/06.txt", "r") as data:

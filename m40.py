@@ -25,12 +25,9 @@ def crt(a: list[int], n: list[int]) -> int:
     system x = a_i mod n_i for all i such that 0 <= x < prod(n_i),
     assuming n_i are pairwise coprime.
     """
-    if len(a) != len(n):
-        raise ValueError("Arguments must be of equal length")
-
     r = 0
     N = math.prod(n)
-    for a_i, n_i in zip(a, n):
+    for a_i, n_i in zip(a, n, strict=True):
         m_s = N // n_i
         r += a_i * m_s * m39.invmod(m_s, n_i)
 

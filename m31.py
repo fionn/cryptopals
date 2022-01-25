@@ -32,8 +32,8 @@ def hmac_sha1(key: bytes, message: bytes) -> SHA1:
 
 def insecure_compare(a: bytes, b: bytes, delay: float) -> bool:
     if len(a) != len(b):
-        raise IndexError("Arguments must be the same size")
-    for c, d in zip(a, b):
+        raise ValueError("Arguments must be the same size")
+    for c, d in zip(a, b, strict=True):
         if c != d:
             return False
         time.sleep(delay)

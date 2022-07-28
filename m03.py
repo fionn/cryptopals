@@ -2,10 +2,18 @@
 """Single-byte XOR cipher"""
 # "Cooking MC's like a pound of bacon"
 
-from m02 import fixed_xor
-from data.frequency import frequency
+import json
+from functools import cache
 
-def expectation(k: int, length: int, t: float = 0.01) -> float:
+from m02 import fixed_xor
+
+@cache
+def frequency_map() -> dict[str, float]:
+    with open("data/frequency.json") as f:
+        return json.load(f)
+
+def expectation(k: int, length: int, t: float = 0.01,
+                frequency: dict[str, float] = frequency_map()) -> float:
     if chr(k).lower() in frequency:
         return frequency[chr(k).lower()] * length
 

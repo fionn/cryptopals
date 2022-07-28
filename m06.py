@@ -11,7 +11,7 @@ from m05 import repeating_key_xor
 def hamming_distance(s1: bytes, s2: bytes) -> int:
     if len(s1) != len(s2):
         raise IndexError("Arguments must be the same size")
-    return sum([bin(s1[i] ^ s2[i]).count("1") for i in range(len(s1))])
+    return sum(bin(s1[i] ^ s2[i]).count("1") for i in range(len(s1)))
 
 def find_keysize(cyphertext: bytes) -> int:
     bound = float("inf")

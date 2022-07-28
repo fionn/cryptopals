@@ -817,8 +817,7 @@ class Test35(unittest.TestCase):
     """Implement DH with negotiated groups,
        and break with malicious g parameters"""
 
-    @staticmethod
-    def tearDown() -> None:
+    def tearDown(self) -> None:
         gc.collect()
 
     def test_dh_protocol(self) -> None:

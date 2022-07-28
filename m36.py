@@ -3,11 +3,13 @@
 
 import hmac
 import hashlib
+from functools import cache
 from abc import ABC, abstractmethod
 from typing import Union, Any
 
 from Crypto.Random.random import randrange
 
+@cache
 def prime() -> int:
     with open("data/33.txt", "r") as prime_file:
         return int(prime_file.read().replace("\n", ""), 16)

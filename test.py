@@ -66,6 +66,7 @@ import m47
 import m49
 import m50
 import m51
+import m52
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1568,6 +1569,70 @@ class Test51(unittest.TestCase):
         """CRIME attack on a block cipher"""
         session_id = m51.attack(m51.cbc_oracle)
         self.assertEqual(session_id, m51.SESSION_ID)
+
+class Test52(unittest.TestCase):
+    """Iterated Hash Function Multicollisions"""
+
+    def test_pep_452_mdhash(self) -> None:
+        """MDHash decendants conform to PEP 452"""
+        xh = m52.ExpensiveHash()
+        xh_copy = xh.copy()
+        xh_copy.update(b"yolo")
+        self.assertNotEqual(xh.hexdigest(), xh_copy.hexdigest())
+
+    def test_block_pairs(self) -> None:
+        """Generate all block pairs"""
+        self.assertEqual(len(list(m52.all_possible_block_pairs(1))),
+                         math.comb(2 ** 8, 2))
+
+    def test_collision_finding_machine(self) -> None:
+        """Exhaust the collision finding machine"""
+        for collision in m52.collision_finding_machine(bytes(1)):
+            self.assertTrue(m52.verify_collision(collision))
+
+    def test_multicollision(self) -> None:
+        """Generate 2 ^ n hash multicollisions"""
+        n = 2
+        multicollision = m52.generate_multicollisions(n, m52.CheapHash)
+        self.assertEqual(len(multicollision.messages), 2 ** n)
+        self.assertTrue(m52.verify_collision(multicollision))
+
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_cascading_collision_cheap(self, _: io.StringIO) -> None:
+        """Find a collision in a cascading hash function"""
+        m52.ExpensiveHash.digest_size = 2
+        m52.ExpensiveHash.register = bytes(m52.ExpensiveHash.digest_size)
+        collision = m52.find_cascading_hash_collision(limit=2)
+
+        target_hashes = set()
+        for m in collision.messages:
+            target_hashes.add(m52.cascade_hash(m))
+
+        self.assertEqual(len(target_hashes), 1)
+        self.assertEqual(len(collision.messages), 2)
+        self.assertEqual(target_hashes.pop(), collision.hash.out)
+
+    @unittest.skip("Long test")
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_cascading_collision(self, _: io.StringIO) -> None:
+        """Find a collision in a cascading hash function"""
+        collision = m52.find_cascading_hash_collision(limit=20)
+
+        target_hashes = set()
+        for m in collision.messages:
+            target_hashes.add(m52.cascade_hash(m))
+
+        self.assertEqual(len(target_hashes), 1)
+        self.assertEqual(len(set(collision.messages)), 2)
+        self.assertEqual(target_hashes.pop(), collision.hash.out)
+
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_cascading_collision_fail(self, _: io.StringIO) -> None:
+        """Fail to find a collision in a cascading hash function"""
+        m52.ExpensiveHash.digest_size = 3
+        m52.ExpensiveHash.register = bytes(m52.ExpensiveHash.digest_size)
+        with self.assertRaises(RuntimeError):
+            m52.find_cascading_hash_collision(limit=2)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

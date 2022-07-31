@@ -414,6 +414,15 @@ class Test26(unittest.TestCase):
 class Test27(unittest.TestCase):
     """Recover the key from CBC with IV = Key"""
 
+    def test_ascii_compliant(self) -> None:
+        """Pass ASCII compliance check"""
+        self.assertTrue(m27.ascii_compliant(b"abc"))
+
+    def test_oracle_plaintext(self) -> None:
+        """Query the oracle with ASCII-compliant plaintext"""
+        c = m27.bad_cbc_encryption(MESSAGE)
+        self.assertIs(m27.oracle(c), None)
+
     def test_recover_cbc_key_with_equal_key_iv(self) -> None:
         """CBC key recovery with IV = key"""
         c = m27.bad_cbc_encryption(MESSAGE * 3)
@@ -538,6 +547,12 @@ class Test28(unittest.TestCase):
 
 class Test29(unittest.TestCase):
     """Break a SHA-1 keyed MAC using length extension"""
+
+    def test_get_sha1_state(self) -> None:
+        """Get the internal state of a SHA-1 object"""
+        h = m28.SHA1()
+        self.assertEqual(m29.sha1_state_from_binary(h.digest()),
+                         m29.sha1_state_from_object(h))
 
     def test_break_sha1_mac_length_extension(self) -> None:
         """Break a SHA-1 keyed MAC using length extension"""

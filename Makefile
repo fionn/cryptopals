@@ -23,9 +23,9 @@ test:
 	@python -m unittest --buffer
 
 coverage: $(SRC) $(TEST)
-	@coverage run --branch --concurrency=thread --omit=venv/* test.py
-	@coverage report -m
-	@coverage html -d ./coverage
+	@coverage run $(TEST)
+	@coverage report
+	@coverage html -d ./$@
 	@coverage erase
 
 .PHONY: lint

@@ -1,11 +1,25 @@
+# vim: ft=confini
+
+[run]
+branch = True
+dynamic_context = test_function
+concurrency = thread
+omit = venv/*
+
 [report]
+fail_under = 90
+show_missing = True
 exclude_lines =
     pragma: no cover
     def __repr__
     def main
     raise AssertionError
     raise NotImplementedError
+    raise RuntimeError
     pass
-    self.fail
+    self\.fail
     if __name__ == .__main__.:
     @unittest.skip
+
+[html]
+show_contexts = True

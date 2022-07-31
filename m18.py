@@ -2,7 +2,6 @@
 """Implement CTR, the stream cipher mode"""
 # "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby"
 
-from struct import pack
 from base64 import b64decode
 
 from Crypto.Cipher import AES
@@ -18,7 +17,8 @@ def aes_ctr(cyphertext: bytes, key: bytes, nonce: int = 0) -> bytes:
     message = b""
     ctr = 0
     for block in c:
-        keystream = pack("<Qq", nonce, ctr)
+        keystream = nonce.to_bytes(8, "little") \
+                    + ctr.to_bytes(8, "little", signed=True)
         message += fixed_xor(cypher.encrypt(keystream)[:len(block)], block)
         ctr += 1
     return message

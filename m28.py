@@ -1,18 +1,56 @@
 #!/usr/bin/env python3
 """Implement a SHA-1 keyed MAC"""
 
+import abc
 from copy import copy
-
 from typing import Generator, Tuple, Union
 
 Register = Union[Tuple[int, ...], Tuple[int, int, int, int, int]]
 
-class SHA1:
+class HashBase(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def block_size(self) -> int:
+        """The internal block size of the hash algorithm in bytes"""
+
+    @property
+    @abc.abstractmethod
+    def digest_size(self) -> int:
+        """The size of the digest"""
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        """The canonical, lowercase name of the hashing algorithm"""
+
+    @abc.abstractmethod
+    def __init__(self, data: bytes) -> None:
+        """init"""
+
+    @abc.abstractmethod
+    def copy(self) -> "HashBase":
+        """A separate copy of this hashing object"""
+
+    @abc.abstractmethod
+    def digest(self) -> bytes:
+        """Hash value as bytes"""
+
+    @abc.abstractmethod
+    def hexdigest(self) -> str:
+        """Hash value as a hexadecimal string"""
+
+    @abc.abstractmethod
+    def update(self, data: bytes) -> None:
+        """Hash the input into the current state"""
+
+class SHA1(HashBase):
     block_size = 64
     digest_size = 20
     name = "sha1"
 
     def __init__(self, data: bytes = b"") -> None:
+        super().__init__(data)
         self.h: Register = (0x67452301, 0xefcdab89,
                             0x98badcfe, 0x10325476, 0xc3d2e1f0)
         self._current_register: Register = self.h
@@ -23,17 +61,11 @@ class SHA1:
     def _leftrotate(b: int, n: int = 1) -> int:
         return (b << n | b >> 32 - n) & 0xffffffff
 
-    def new(self, data: bytes = b"") -> "SHA1":
-        self.data = b""
-        self.update(data)
-        return self
-
-    def update(self, data: bytes) -> "SHA1":
+    def update(self, data: bytes) -> None:
         self._current_register = self.h
         self.data += data
         for chunk in self._chunks():
             self._update_register(chunk)
-        return self
 
     def copy(self) -> "SHA1":
         return copy(self)

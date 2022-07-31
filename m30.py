@@ -8,15 +8,18 @@ from typing import Generator, Tuple, Union
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randint
 
+from m28 import HashBase
+
 Register = Union[Tuple[int, ...], Tuple[int, int, int, int]]
 
-class MD4:
+class MD4(HashBase):
     name = "md4"
     block_size = 64
     digest_size = 16
     register = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476)
 
     def __init__(self, data: bytes = b"") -> None:
+        super().__init__(data)
         self._register: Register = MD4.register
         self.data = b""
         self._vandercorput = [self._binaryreverse(x) for x in range(16)]
@@ -25,17 +28,11 @@ class MD4:
     def copy(self) -> "MD4":
         return copy(self)
 
-    def update(self, data: bytes) -> "MD4":
+    def update(self, data: bytes) -> None:
         self._register = MD4.register
         self.data += data
         for chunk in self._chunks():
             self._compress(chunk)
-        return self
-
-    def new(self, data: bytes = b"") -> "MD4":
-        self.data = b""
-        self.update(data)
-        return self
 
     @staticmethod
     def pad_message(data: bytes) -> bytes:

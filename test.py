@@ -423,35 +423,41 @@ class Test28(unittest.TestCase):
         """SHA1 matches hashlib.sha1"""
         m = b"digest me" * 512
         h = hashlib.sha1(m).hexdigest()
-        h_prime = m28.SHA1().new(m).hexdigest()
+        h_prime = m28.SHA1(m).hexdigest()
         self.assertEqual(h, h_prime)
+
+    def test_sha1_pep_452(self) -> None:
+        """SHA1 conforms to PEP 452"""
+        h = hashlib.sha1()
+        h_prime = m28.SHA1()
+        self.assertEqual(h.digest_size, h_prime.digest_size)
+        self.assertEqual(h.block_size, h_prime.block_size)
+        self.assertEqual(h.name, h_prime.name)
 
     def test_sha1_empty_message(self) -> None:
         """SHA1 of empty message matches empty hash"""
         m = b""
-        h = []
+        hs = set()
 
-        h.append(m28.SHA1().new().hexdigest())
-        h.append(m28.SHA1().new(m).hexdigest())
-        h.append(m28.SHA1(m).new().hexdigest())
-        h.append(m28.SHA1(m).new(m).hexdigest())
+        hs.add(m28.SHA1().hexdigest())
+        hs.add(m28.SHA1(m).hexdigest())
 
-        h.append(m28.SHA1().update(m).hexdigest())
-        h.append(m28.SHA1(m).update(m).hexdigest())
+        h = m28.SHA1()
+        h.update(m)
+        hs.add(h.hexdigest())
 
-        h.append(m28.SHA1().new().update(m).hexdigest())
-        h.append(m28.SHA1().new(m).update(m).hexdigest())
-        h.append(m28.SHA1(m).new().update(m).hexdigest())
-        h.append(m28.SHA1(m).new(m).update(m).hexdigest())
+        h = m28.SHA1(m)
+        h.update(m)
+        hs.add(h.hexdigest())
 
-        self.assertEqual(set(h), set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
+        self.assertEqual(hs, set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
 
     def test_sha1_long_input(self) -> None:
         """SHA1 of variable message length matches hashlib.sha1"""
         for i in range(513):
             m = bytes(i)
             h = hashlib.sha1(m).hexdigest()
-            h_prime = m28.SHA1().new(m).hexdigest()
+            h_prime = m28.SHA1(m).hexdigest()
             self.assertEqual(h, h_prime)
 
     def test_sha1_mac(self) -> None:
@@ -459,7 +465,7 @@ class Test28(unittest.TestCase):
         m = b"digest me" * 512
         k = b"it is authentic"
         h = hashlib.sha1(k + m).hexdigest()
-        h_prime = m28.SHA1().new(k + m).hexdigest()
+        h_prime = m28.SHA1(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
     def test_sha1_mac_empty_message(self) -> None:
@@ -467,7 +473,7 @@ class Test28(unittest.TestCase):
         m = b""
         k = b"it is authentic"
         h = hashlib.sha1(k + m).hexdigest()
-        h_prime = m28.SHA1().new(k + m).hexdigest()
+        h_prime = m28.SHA1(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
     def test_sha1_mac_empty_key(self) -> None:
@@ -475,14 +481,14 @@ class Test28(unittest.TestCase):
         m = b"not very authenticated"
         k = b""
         h = hashlib.sha1(k + m).hexdigest()
-        h_prime = m28.SHA1().new(k + m).hexdigest()
+        h_prime = m28.SHA1(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
     def test_sha1_mac_empty_message_and_key(self) -> None:
         """sha1_mac with empty message and key matches hashlib.sha1"""
         m, k = b"", b""
         h = hashlib.sha1(k + m).hexdigest()
-        h_prime = m28.SHA1().new(k + m).hexdigest()
+        h_prime = m28.SHA1(k + m).hexdigest()
         self.assertEqual(h, h_prime)
 
     def test_sha1_mac_cascade(self) -> None:
@@ -503,10 +509,10 @@ class Test28(unittest.TestCase):
         """SHA1 updates correctly"""
         m1 = b"A" * 512
         m2 = b"B" * 512
-        h = m28.SHA1().new()
+        h = m28.SHA1()
         h.update(m1)
         h.update(m2)
-        h_combined = m28.SHA1().new(m1 + m2)
+        h_combined = m28.SHA1(m1 + m2)
         self.assertEqual(h.hexdigest(), h_combined.hexdigest())
         self.assertEqual(h.hexdigest(), hashlib.sha1(m1 + m2).hexdigest())
 
@@ -514,12 +520,9 @@ class Test28(unittest.TestCase):
         """SHA1 initialises correctly"""
         m = b"could be anything"
         h1 = m28.SHA1(m)
-        h2 = m28.SHA1().new(m)
-        h3 = m28.SHA1().update(m)
-        h4 = m28.SHA1().new().update(m)
+        h2 = m28.SHA1()
+        h2.update(m)
         self.assertEqual(h1.hexdigest(), h2.hexdigest())
-        self.assertEqual(h2.hexdigest(), h3.hexdigest())
-        self.assertEqual(h3.hexdigest(), h4.hexdigest())
 
     def test_copy(self) -> None:
         """Copy SHA1 object"""
@@ -580,21 +583,18 @@ class Test30(unittest.TestCase):
         """MD4 initialises correctly"""
         m = b"could be anything"
         h1 = m30.MD4(m)
-        h2 = m30.MD4().new(m)
-        h3 = m30.MD4().update(m)
-        h4 = m30.MD4().new().update(m)
+        h2 = m30.MD4()
+        h2.update(m)
         self.assertEqual(h1.hexdigest(), h2.hexdigest())
-        self.assertEqual(h2.hexdigest(), h3.hexdigest())
-        self.assertEqual(h3.hexdigest(), h4.hexdigest())
 
     def test_md4_update(self) -> None:
         """MD4 updates correctly"""
         m1 = b"A" * 512
         m2 = b"B" * 512
-        h = m30.MD4().new()
+        h = m30.MD4()
         h.update(m1)
         h.update(m2)
-        h_combined = m30.MD4().new(m1 + m2)
+        h_combined = m30.MD4(m1 + m2)
         self.assertEqual(h.hexdigest(), h_combined.hexdigest())
 
     def test_md4_mac(self) -> None:

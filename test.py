@@ -306,7 +306,8 @@ class Test16(unittest.TestCase):
 class Test17(unittest.TestCase):
     """The CBC padding oracle"""
 
-    def test_cbc_padding_oracle_attack(self) -> None:
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_cbc_padding_oracle_attack(self, _: io.StringIO) -> None:
         """End-to-end attack on the CBC padding oracle"""
         c = m17.cbc_oracle()
         m = m17.attack(c)
@@ -1398,7 +1399,8 @@ class Test46(unittest.TestCase):
         self.assertTrue(oracle.is_even(c_even))
         self.assertFalse(oracle.is_even(c_odd))
 
-    def test_attack_parity_oracle(self) -> None:
+    @mock.patch("sys.stdout", _=io.StringIO)
+    def test_attack_parity_oracle(self, _: io.StringIO) -> None:
         """Decrypt via parity oracle"""
         oracle = m46.RSAParityOracle(128)
         c = m39.encrypt(MESSAGE, oracle.pubkey)

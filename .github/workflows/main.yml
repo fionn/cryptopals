@@ -3,8 +3,9 @@ name: CI
 on: push
 
 jobs:
-  test:
-    name: Lint and Test
+
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -12,29 +13,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-        cache: pip
-        cache-dependency-path: requirements*.txt
-
-    - name: Install Python dependencies
-      run: |
-        pip install --progress-bar off -r requirements.txt
-        pip install --progress-bar off -r requirements_dev.txt
-
-    # cracklib provides the wordlist used in m38, but we skip this dependency
-    # because we also skip the test that requires it.
-    - name: Install system dependencies
-      run: sudo apt-get -y install cracklib-runtime
-      if: false
+    - name: Install dependendencies
+      uses: ./.github/actions/setup
 
     - name: Lint
       run: make lint
 
     - name: Typecheck
       run: make typecheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      uses: ./.github/actions/setup
+
+    # cracklib provides the wordlist used in m38, but we skip this dependency
+    # because we also skip the test that requires it.
+    - name: Install system dependencies
+      run: sudo apt-get -y install cracklib-runtime
+      if: false
 
     - name: Test
       run: python -m unittest -v --locals --buffer

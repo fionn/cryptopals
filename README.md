@@ -86,7 +86,7 @@ Set 7: Hashes
 50. [x] [Hashing with CBC-MAC](m50.py)
 51. [x] [Compression Ratio Side-Channel Attacks](m51.py)
 52. [x] [Iterated Hash Function Multicollisions](m52.py)
-53. [ ] Kelsey and Schneier's Expandable Messages
+53. [x] [Kelsey and Schneier's Expandable Messages](m53.py)
 54. [ ] Kelsey and Kohno's Nostradamus Attack
 55. [ ] MD4 Collisions
 56. [ ] RC4 Single-Byte Biases

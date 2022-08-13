@@ -67,6 +67,7 @@ import m49
 import m50
 import m51
 import m52
+import m53
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1630,6 +1631,55 @@ class Test52(unittest.TestCase):
         m52.ExpensiveHash.register = bytes(m52.ExpensiveHash.digest_size)
         with self.assertRaises(RuntimeError):
             m52.find_cascading_hash_collision(limit=2)
+
+class Test53(unittest.TestCase):
+    """Kelsey and Schneier's Expandable Messages"""
+
+    def test_find_collision(self) -> None:
+        """Find all collisions of length 1, k"""
+        h, k = bytes(1), 6
+        for collision in m53.find_collision(k, h):
+            self.assertTrue(m52.verify_collision(collision))
+            self.assertEqual(len(collision.messages[0]) // m53.Hash.block_size, 1)
+            self.assertEqual(len(collision.messages[1]) // m53.Hash.block_size,
+                             2 ** (k - 1) + 1)
+
+    def test_expandable_message_length(self) -> None:
+        """Sanity check expandable message lengths"""
+        h, k = m53.Hash.register, 6
+        collision = next(m53.make_expandable_message(k, h))
+        self.assertTrue(m52.verify_collision(collision))
+        self.assertEqual(len(m52.pad(collision.messages[1])) // 16,
+                         2 ** (k - 1) + 1)
+
+    def test_produce_message(self) -> None:
+        """Produce a message of a given length"""
+        h, k = m53.Hash.register, 3
+        for l in range(k, 2 ** k + k):
+            c = list(m53.make_expandable_message(k, h))
+            m = m53.produce_message(c, k, l)
+            self.assertEqual(m52.md(m, h), c[-1].hash.out)
+            self.assertEqual(len(m) // m53.Hash.block_size, l)
+
+    def test_produce_message_outside_range(self) -> None:
+        """Try to make a message with invalid length"""
+        h, k = m53.Hash.register, 2
+        with self.assertRaises(ValueError):
+            m53.produce_message(list(m53.make_expandable_message(k, h)), k, 1)
+
+    def test_second_preimage_attack(self) -> None:
+        """Second preimage attack"""
+        h, k = m53.Hash.register, 3
+        m = bytes(m53.Hash.block_size * 2 ** k)
+        h_m = m52.md(m, h)
+
+        m_prime = m53.second_preimage_attack(m)
+
+        self.assertNotEqual(m, m_prime)
+        self.assertEqual(m52.md(m_prime, h), h_m)
+
+        collision = m52.HashCollision((m, m_prime), m52.Chain(h, h_m))
+        self.assertTrue(m52.verify_collision(collision))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

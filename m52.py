@@ -9,7 +9,7 @@ from abc import ABC
 
 from Crypto.Cipher import AES
 
-from m28 import HashBase
+from m28 import HashBase, merkle_pad
 
 BLOCKSIZE = 16
 
@@ -63,9 +63,13 @@ def blocks(m: bytes) -> list[bytes]:
     return [m[i:i + BLOCKSIZE] for i in range(0, len(m), BLOCKSIZE)]
 
 def pad(m: bytes) -> bytes:
-    """Naively pad with zeros up to a multiple of the blocksize"""
-    return m + bytes((-len(m) % BLOCKSIZE) % BLOCKSIZE)
-
+    """Merkle-pad idempotently"""
+    # We don't pad if we already fit the block size because we want to share
+    # the md function between both the MDHash instances (which don't require
+    # idempotency) and the attacker (which does).
+    if len(m) % BLOCKSIZE == 0:
+        return m
+    return merkle_pad(m, BLOCKSIZE, "big", 4)
 
 def aes_compressor(m: bytes, h: bytes) -> bytes:
     """Compress with AES-ECB-128"""

@@ -3,9 +3,17 @@
 
 import abc
 from copy import copy
-from typing import Generator, Tuple, Union
+from typing import Generator, Tuple, Union, Literal
 
 Register = Union[Tuple[int, ...], Tuple[int, int, int, int, int]]
+
+def merkle_pad(data: bytes, blocksize: int,
+               byteorder: Literal["little", "big"],
+               width: int = 8) -> bytes:
+    bit_length = 8 * len(data)
+    data += b"\x80"
+    data += bytes((-width - len(data) % blocksize) % blocksize)
+    return data + bit_length.to_bytes(width, byteorder)
 
 class HashBase(abc.ABC):
 
@@ -72,11 +80,8 @@ class SHA1(HashBase):
 
     @staticmethod
     def pad_message(data: bytes) -> bytes:
-        data_bits = 8 * len(data)
-        data += b"\x80"
-        data += b"\x00" * ((56 - len(data) % 64) % 64)
-        data += data_bits.to_bytes(8, "big")
-        assert len(data) % 64 == 0
+        data = merkle_pad(data, SHA1.block_size, "big")
+        assert len(data) % SHA1.block_size == 0
         return data
 
     def _chunks(self) -> Generator[bytes, None, None]:

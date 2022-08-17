@@ -8,7 +8,7 @@ from typing import Generator, Tuple, Union
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randint
 
-from m28 import HashBase
+from m28 import HashBase, merkle_pad
 
 Register = Union[Tuple[int, ...], Tuple[int, int, int, int]]
 
@@ -36,17 +36,14 @@ class MD4(HashBase):
 
     @staticmethod
     def pad_message(data: bytes) -> bytes:
-        b = (8 * len(data)).to_bytes(8, "little")
-        data += b"\x80"
-        data += b"\x00" * ((56 - len(data) % MD4.block_size) % MD4.block_size)
-        data += b
+        data = merkle_pad(data, MD4.block_size, "little")
         assert len(data) % MD4.block_size == 0
         return data
 
     def _chunks(self) -> Generator[bytes, None, None]:
         data = self.pad_message(self.data)
-        for i in range(0, len(data), MD4.block_size):
-            yield data[i:i + MD4.block_size]
+        for i in range(0, len(data), self.block_size):
+            yield data[i:i + self.block_size]
 
     @staticmethod
     def _lrot(x: int, n: int = 1) -> int:
@@ -174,7 +171,7 @@ def extend_md4(d: MD4, z: bytes) -> Generator[MD4, None, None]:
     padding = z + md_padding(z)
 
     for n in range(1, 100):
-        data_int = 8 * (64 * n + len(z))
+        data_int = 8 * (MD4.block_size * n + len(z))
         data_bits = data_int.to_bytes(8, "little")
         padding = padding[:-8] + data_bits
 
@@ -199,7 +196,8 @@ def main() -> None:
     for q in extend_md4(mac, z):
         if verify_md4_mac(q, m_prime, key):
             print(q.hexdigest())
-            break
+            return
+    raise RuntimeError("Failed to break MD4-MAC")
 
 if __name__ == "__main__":
     main()

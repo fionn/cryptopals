@@ -452,6 +452,8 @@ class Test28(unittest.TestCase):
         h.update(m)
         hs.add(h.hexdigest())
 
+        hs.add(hashlib.sha1(m).hexdigest())
+
         self.assertEqual(hs, set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
 
     def test_sha1_long_input(self) -> None:
@@ -672,7 +674,7 @@ class Test30(unittest.TestCase):
         data = b"llllll"
         padding = m30.md_padding(data)
         padding_prime = b"\x80" \
-                        + b"\x00" * ((56 - len(data) - 1 % m30.MD4.block_size)
+                        + bytes((56 - len(data) - 1 % m30.MD4.block_size)
                                      % m30.MD4.block_size) \
                         + (8 * len(data)).to_bytes(8, "little")
         self.assertEqual(padding, padding_prime)

@@ -64,7 +64,8 @@ def blocks(m: bytes) -> list[bytes]:
 
 def pad(m: bytes) -> bytes:
     """Naively pad with zeros up to a multiple of the blocksize"""
-    return m + bytes((BLOCKSIZE - (len(m) % BLOCKSIZE)) % BLOCKSIZE)
+    return m + bytes((-len(m) % BLOCKSIZE) % BLOCKSIZE)
+
 
 def aes_compressor(m: bytes, h: bytes) -> bytes:
     """Compress with AES-ECB-128"""
@@ -88,47 +89,43 @@ def all_possible_block_pairs(byte_length: int) -> Iterator[tuple[bytes, bytes]]:
             yield m1_int.to_bytes(byte_length, "big"), \
                   m2_int.to_bytes(byte_length, "big")
 
-def verify_collision(collisions: HashCollision) -> bool:
+def verify_collision(collision: HashCollision) -> bool:
     """Verify collisions for a single MD-style compression function"""
     target_hashes = set()
-    for m in collisions.messages:
-        target_hashes.add(md(m, collisions.hash.input))
-    return len(target_hashes) == 1 and target_hashes.pop() == collisions.hash.out
-
-def collision_finding_machine(h: bytes) -> Iterator[HashCollision]:
-    """For a given state, find two blocks that compress to the same image"""
-    for m, m_prime in all_possible_block_pairs(len(h)):
-        h_next = md(m, h)
-        if h_next == md(m_prime, h):
-            yield HashCollision((m, m_prime), Chain(h, h_next))
+    for m in collision.messages:
+        target_hashes.add(md(m, collision.hash.input))
+    return len(target_hashes) == 1 and target_hashes.pop() == collision.hash.out
 
 def generate_colliding_pairs(n: int, h: bytes) -> Iterator[HashCollision]:
     """Yield colliding pairs for a sequence of states"""
     for _ in range(n):
-        collision = next(collision_finding_machine(h), None)
+        for m, m_prime in all_possible_block_pairs(len(h)):
+            h_next = md(m, h)
+            if h_next == md(m_prime, h):
+                collision = HashCollision((m, m_prime), Chain(h, h_next))
+                break
         h = collision.hash.out
         yield collision
 
-def generate_multicollisions(n: int, hasher: type[MDHash]) -> HashCollision:
-    """Return 2 ^ n multicollisions"""
+def generate_multicollision(n: int, hasher: type[MDHash]) -> HashCollision:
+    """Return 2ⁿ multicollisions"""
     h = hasher.register
-    colliding_pairs = list(generate_colliding_pairs(n, h))
     messages = [b""]
-    for collision in colliding_pairs:
+    for collision in generate_colliding_pairs(n, h):
         assert verify_collision(collision)
+        h_out = collision.hash.out
         for message in copy(messages):
             messages.remove(message)
             messages += [message + pad(collision.messages[i]) for i in range(2)]
 
-    return HashCollision(tuple(messages), Chain(h, colliding_pairs[-1].hash.out))
+    return HashCollision(tuple(messages), Chain(h, h_out))
 
 def find_cascading_hash_collision(limit: int = 20) -> HashCollision:
     """Find a collision in the cascading hash function"""
-    print(ExpensiveHash.digest_size)
     for n in range(1, limit):
         print(f"Adding {2 ** n} hashes to the pool")
         xh_map: dict[bytes, bytes] = {}
-        multicollision = generate_multicollisions(n, CheapHash)
+        multicollision = generate_multicollision(n, CheapHash)
         for m in multicollision.messages:
             xh = ExpensiveHash(m).digest()
             if xh in xh_map:
@@ -140,7 +137,7 @@ def find_cascading_hash_collision(limit: int = 20) -> HashCollision:
 
 def main() -> None:
     """Entry point"""
-    collision = find_cascading_hash_collision()
+    collision = find_cascading_hash_collision(limit=20)
 
     target_hashes = set()
     for m in collision.messages:

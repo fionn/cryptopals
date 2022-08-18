@@ -1585,15 +1585,10 @@ class Test52(unittest.TestCase):
         self.assertEqual(len(list(m52.all_possible_block_pairs(1))),
                          math.comb(2 ** 8, 2))
 
-    def test_collision_finding_machine(self) -> None:
-        """Exhaust the collision finding machine"""
-        for collision in m52.collision_finding_machine(bytes(1)):
-            self.assertTrue(m52.verify_collision(collision))
-
     def test_multicollision(self) -> None:
-        """Generate 2 ^ n hash multicollisions"""
+        """Generate 2ⁿ hash multicollisions"""
         n = 2
-        multicollision = m52.generate_multicollisions(n, m52.CheapHash)
+        multicollision = m52.generate_multicollision(n, m52.CheapHash)
         self.assertEqual(len(multicollision.messages), 2 ** n)
         self.assertTrue(m52.verify_collision(multicollision))
 

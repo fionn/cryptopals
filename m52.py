@@ -2,7 +2,8 @@
 """Iterated Hash Function Multicollisions"""
 # https://www.iacr.org/archive/crypto2004/31520306/multicollisions.pdf
 
-from typing import Callable, Iterator, NamedTuple
+from collections.abc import Iterator, Callable
+from typing import NamedTuple
 from functools import cache
 from copy import copy
 from abc import ABC
@@ -57,10 +58,10 @@ def cascade_hash(message: bytes) -> bytes:
     """Super secure collision-resistant cascading hash function"""
     return CheapHash(message).digest() + ExpensiveHash(message).digest()
 
-def blocks(m: bytes) -> list[bytes]:
+def blocks(m: bytes, blocksize: int = BLOCKSIZE) -> list[bytes]:
     """Split m into blocks"""
-    assert len(m) % BLOCKSIZE == 0
-    return [m[i:i + BLOCKSIZE] for i in range(0, len(m), BLOCKSIZE)]
+    assert len(m) % blocksize == 0
+    return [m[i:i + blocksize] for i in range(0, len(m), blocksize)]
 
 def pad(m: bytes) -> bytes:
     """Merkle-pad idempotently"""
@@ -151,8 +152,8 @@ def main() -> None:
     assert len(set(collision.messages)) == 2
     assert target_hashes.pop() == collision.hash.out
 
-    print("m_0 =", collision.messages[0].hex())
-    print("m_1 =", collision.messages[1].hex())
+    print("m₀ =", collision.messages[0].hex())
+    print("m₁ =", collision.messages[1].hex())
     print("h =", collision.hash.out.hex())
 
 if __name__ == "__main__":

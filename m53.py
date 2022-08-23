@@ -5,6 +5,7 @@
 
 from collections.abc import Iterator, Sequence
 
+from m02 import fixed_xor
 import m52
 from m52 import md, pad, HashCollision, Chain, CheapHash as Hash
 
@@ -57,7 +58,7 @@ def second_preimage_attack(m: bytes) -> bytes:
     h = Hash.register
     intermediate_states = []
     for block in m52.blocks(pad(m), Hash.block_size):
-        h = m52.aes_compressor(block, h)[:Hash.digest_size]
+        h = fixed_xor(m52.aes_compressor(block, h)[:Hash.digest_size], h)
         intermediate_states.append(h)
     del h
 

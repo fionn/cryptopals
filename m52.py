@@ -10,6 +10,7 @@ from abc import ABC
 
 from Crypto.Cipher import AES
 
+from m02 import fixed_xor
 from m28 import HashBase, merkle_pad
 
 BLOCKSIZE = 16
@@ -83,7 +84,7 @@ def md(m: bytes, h: bytes,
     """Generic Merkle–Damgård compression function"""
     digest_size = len(h)
     for block in blocks(pad(m)):
-        h = c(block, h)[:digest_size]
+        h = fixed_xor(c(block, h)[:digest_size], h)
     return h
 
 def all_possible_block_pairs(byte_length: int) -> Iterator[tuple[bytes, bytes]]:

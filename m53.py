@@ -37,31 +37,26 @@ def produce_message(c: Sequence[HashCollision], k: int, l: int) -> bytes:
         raise ValueError(f"{l=} must be between {k} and {2 ** k + k - 1}")
 
     s = [int(t) for t in bin(l - k)[2:].zfill(k)]
-    m = b""
 
+    m = b""
     for i, collision in enumerate(c):
-        h_out = collision.hash.out
-        if s[i] == 0:
-            m += collision.messages[0]
-        else:
-            m += collision.messages[1]
+        m += collision.messages[s[i]]
 
     assert len(m) // Hash.block_size == l
-    assert md(m, Hash.register) == h_out
     return m
+
+def generate_intermediate_states(m: bytes, h: bytes) -> Iterator[bytes]:
+    """md function that yields its internal state on each iteration"""
+    for block in m52.blocks(pad(m), Hash.block_size):
+        h = fixed_xor(m52.aes_compressor(block, h)[:Hash.digest_size], h)
+        yield h
 
 def second_preimage_attack(m: bytes) -> bytes:
     """Find the second preimage of m"""
     # This is LongMessageAttack(M_target) in §4.2.
     k = (len(m) // Hash.block_size).bit_length() - 1  # m has 2 ^ k blocks
 
-    h = Hash.register
-    intermediate_states = []
-    for block in m52.blocks(pad(m), Hash.block_size):
-        h = fixed_xor(m52.aes_compressor(block, h)[:Hash.digest_size], h)
-        intermediate_states.append(h)
-    del h
-
+    intermediate_states = list(generate_intermediate_states(m, Hash.register))
     c = list(make_expandable_message(k, Hash.register))
     h_exp = c[-1].hash.out
 

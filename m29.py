@@ -4,7 +4,7 @@
 from collections.abc import Iterator
 
 from Crypto.Random import get_random_bytes
-from Crypto.Random.random import randint
+from Crypto.Random.random import randrange
 
 from m28 import SHA1, sha1_mac, Register
 
@@ -43,7 +43,7 @@ def extend_sha1(d: SHA1, z: bytes) -> Iterator[SHA1]:
 def main() -> None:
     m = b"comment1=cooking%20MCs;userdata=foo;" \
         b"comment2=%20like%20a%20pound%20of%20bacon"
-    k = get_random_bytes(randint(0, 50))
+    k = get_random_bytes(randrange(50))
     z = b";admin=true"
 
     # server-side

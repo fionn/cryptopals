@@ -17,7 +17,7 @@ from Crypto.Hash import MD4
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Crypto.Random import get_random_bytes
-from Crypto.Random.random import randint, getrandbits
+from Crypto.Random.random import randrange, getrandbits
 
 import m01
 import m02
@@ -380,7 +380,7 @@ class Test24(unittest.TestCase):
     def test_crack_mt19937_crypt(self) -> None:
         """Get MT19937 stream cipher seed"""
         seed = getrandbits(16)
-        prefix = get_random_bytes(randint(0, 100))
+        prefix = get_random_bytes(randrange(100))
         plaintext = prefix + b"A" * 14
         cyphertext = m24.mt19937_crypt(plaintext, seed)
         found_seed = m24.crack_mt19937(cyphertext)
@@ -543,7 +543,7 @@ class Test29(unittest.TestCase):
         """Break a SHA-1 keyed MAC using length extension"""
         m = b"comment1=cooking%20MCs;userdata=foo;" \
             b"comment2=%20like%20a%20pound%20of%20bacon"
-        k = get_random_bytes(randint(0, 50))
+        k = get_random_bytes(randrange(50))
         z = b";admin=true"
 
         # server-side

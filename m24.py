@@ -2,7 +2,7 @@
 """MT19937 Stream Cipher"""
 
 from Crypto.Random import get_random_bytes
-from Crypto.Random.random import randint, getrandbits
+from Crypto.Random.random import randrange, getrandbits
 
 from m21 import MT19937
 
@@ -29,7 +29,7 @@ def crack_mt19937(cyphertext: bytes) -> int:
 def main() -> None:
     seed = getrandbits(16)
 
-    prefix = get_random_bytes(randint(0, 100))
+    prefix = get_random_bytes(randrange(100))
     plaintext = prefix + b"A" * 14
 
     if not verify_mt19937_crypt(message=bytes(10), seed=0xffff):

@@ -7,7 +7,7 @@ from typing import Union
 from collections.abc import Iterator
 
 from Crypto.Random import get_random_bytes
-from Crypto.Random.random import randint
+from Crypto.Random.random import randrange
 
 from m28 import HashBase, merkle_pad
 
@@ -186,7 +186,7 @@ def extend_md4(d: MD4, z: bytes) -> Iterator[MD4]:
 def main() -> None:
     message = b"comment1=cooking%20MCs;userdata=foo;" \
               b"comment2=%20like%20a%20pound%20of%20bacon"
-    key = get_random_bytes(randint(0, 50))
+    key = get_random_bytes(randrange(50))
     z = b";admin=true"
 
     # server-side

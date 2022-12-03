@@ -10,7 +10,7 @@ from m02 import fixed_xor
 @cache
 def frequency_map() -> dict[str, float]:
     with open("data/frequency.json") as f:
-        return json.load(f)
+        return json.load(f)  # type: ignore
 
 def expectation(k: int, length: int, t: float = 0.01,
                 frequency: dict[str, float] = frequency_map()) -> float:

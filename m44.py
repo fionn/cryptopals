@@ -3,7 +3,7 @@
 
 import json
 import functools
-from typing import Any
+from typing import TypedDict
 
 import m39
 import m43
@@ -15,6 +15,8 @@ PUBLIC_KEY = int("2d026f4bf30195ede3a088da85e398ef869611d0f68f07"
                  "f98a6a4d83d8279ee65d71c1203d2c96d65ebbf7cce9d3"
                  "2971c3de5084cce04a2e147821", 16)
 
+Message = TypedDict("Message", {"msg": bytes, "s": int, "r": int, "m": int})
+
 @functools.cache
 def get_parameters(filename: str = "data/43.txt") -> dict[str, int]:
     with open(filename) as data_fd:
@@ -22,28 +24,27 @@ def get_parameters(filename: str = "data/43.txt") -> dict[str, int]:
     return {k: int(data[k], 16) for k in ["p", "q", "g"]}
 
 @functools.cache
-def get_messages(filename: str = "data/44.txt") -> list[dict[str, Any]]:
+def get_messages(filename: str = "data/44.txt") -> list[Message]:
     with open(filename) as data_fd:
         lines = data_fd.readlines()
 
     messages = []
     for i in range(0, len(lines), 4):
-        element: dict[str, bytes | int] = {}
-        element["msg"] = lines[i].split("msg: ")[1].strip("\n").encode()
-        element["s"] = int(lines[i + 1].split("s: ", maxsplit=1)[1])
-        element["r"] = int(lines[i + 2].split("r: ", maxsplit=1)[1])
-        element["m"] = int(lines[i + 3].split("m: ", maxsplit=1)[1], 16)
+        msg = lines[i].split("msg: ")[1].strip("\n").encode()
+        s = int(lines[i + 1].split("s: ", maxsplit=1)[1])
+        r = int(lines[i + 2].split("r: ", maxsplit=1)[1])
+        m = int(lines[i + 3].split("m: ", maxsplit=1)[1], 16)
+        element: Message = {"msg": msg, "s": s, "r": r, "m": m}
         messages.append(element)
 
     return messages
 
-def group_by_repeated_k(messages: list[dict[str, Any]]) \
-                        -> list[list[dict[str, Any]]]:
+def group_by_repeated_k(messages: list[Message]) -> list[list[Message]]:
     """
     r = g^k mod p mod q, so we match up messages with identical r values
     which implies they were signed with the same nonce k
     """
-    same_r: dict[int, list[dict[str, Any]]] = {}
+    same_r: dict[int, list[Message]] = {}
     for message in messages:
         try:
             same_r[message["r"]].append(message)
@@ -52,12 +53,11 @@ def group_by_repeated_k(messages: list[dict[str, Any]]) \
 
     return list(same_r.values())
 
-def recover_k(message_1: dict[str, Any], message_2: dict[str, Any],
-              q: int) -> int:
-    m_1: int = message_1["m"]
-    m_2: int = message_2["m"]
-    s_1: int = message_1["s"]
-    s_2: int = message_2["s"]
+def recover_k(message_1: Message, message_2: Message, q: int) -> int:
+    m_1 = message_1["m"]
+    m_2 = message_2["m"]
+    s_1 = message_1["s"]
+    s_2 = message_2["s"]
 
     return m39.invmod((s_1 - s_2) % q, q) * ((m_1 - m_2) % q) % q
 

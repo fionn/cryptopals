@@ -3,7 +3,7 @@
 
 from functools import reduce
 from hmac import compare_digest
-from typing import Any
+from typing import TypedDict
 
 from Crypto.Random import get_random_bytes
 
@@ -13,6 +13,9 @@ from m10 import encrypt_aes_cbc
 
 BLOCKSIZE = 16
 KEY = b"yellow submarine"
+
+TX = TypedDict("TX", {"to": str, "amount": int})
+TransactionV2 = TypedDict("TransactionV2", {"from": str, "tx_list": list[TX]})
 
 class ClientV1:
 
@@ -62,12 +65,12 @@ class ClientV2:
         return cbc_mac(KEY, bytes(16), message)
 
     @staticmethod
-    def _compose_message(from_id: str, tx_list: dict[str, int]) -> bytes:
-        txs = ";".join([f"{to}:{amount}" for to, amount in tx_list.items()])
+    def _compose_message(from_id: str, tx_map: dict[str, int]) -> bytes:
+        txs = ";".join([f"{to}:{amount}" for to, amount in tx_map.items()])
         return f"from={from_id}&tx_list={txs}".encode()
 
-    def _compose(self, tx_list: dict[str, int]) -> bytes:
-        return self._compose_message(self.id, tx_list)
+    def _compose(self, tx_map: dict[str, int]) -> bytes:
+        return self._compose_message(self.id, tx_map)
 
     def send(self, tx_list: dict[str, int]) -> bytes:
         """Return a payload for the server"""
@@ -85,23 +88,23 @@ class ServerV2:
         return compare_digest(cbc_mac(KEY, bytes(16), message), mac)
 
     @staticmethod
-    def process(payload: bytes) -> dict[str, str | list[dict[str, Any]]]:
+    def process(payload: bytes) -> TransactionV2:
         if not ServerV2.validate(payload):
             raise Exception("Invalid payload")
         message, _ = parse_payload_v2(payload)
         return ServerV2._transact(message)
 
     @staticmethod
-    def _transact(message: bytes) -> dict[str, str | list[dict[str, Any]]]:
+    def _transact(message: bytes) -> TransactionV2:
         """Terrible transaction processing"""
-        transaction_dict: dict[str, Any] = {}
+        transaction_dict = {}
         for element in message.split(b"&"):
             k, v = element.split(b"=", maxsplit=2)
             transaction_dict[k.decode()] = v.decode(errors="ignore")
 
         tx_list = transaction_dict["tx_list"].split(";")
 
-        tx_blob = []
+        tx_blob: list[TX] = []
         for tx in tx_list:
             try:
                 to, amount = tx.split(":", maxsplit=2)
@@ -109,8 +112,7 @@ class ServerV2:
             except ValueError:
                 continue
 
-        transaction_dict["tx_list"] = tx_blob
-        return transaction_dict
+        return {"from": transaction_dict["from"], "tx_list": tx_blob}
 
 def cbc_mac(key: bytes, iv: bytes, message: bytes) -> bytes:
     assert len(message) % BLOCKSIZE == 0

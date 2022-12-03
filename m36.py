@@ -5,9 +5,13 @@ import hmac
 import hashlib
 from functools import cache
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TypedDict
 
 from Crypto.Random.random import randrange
+
+Parameters = TypedDict("Parameters", {"N": int, "g": int, "k": int,
+                                      "I": str, "p": str})
+EmailPubKey = TypedDict("EmailPubKey", {"I": str, "pubkey": int})
 
 @cache
 def prime() -> int:
@@ -72,14 +76,14 @@ class Client(SRPPeer):
             self.A = pow(self.g, self._a, self.N)
         return self.A
 
-    def negotiate_send(self) -> dict[str, str | int]:
+    def negotiate_send(self) -> Parameters:
         return {"N": self.N,
                 "g": self.g,
                 "k": self.k,
                 "I": self.I,
                 "p": self.P}
 
-    def send_email_pubkey(self) -> dict[str, str | int]:
+    def send_email_pubkey(self) -> EmailPubKey:
         return {"I": self.I, "pubkey": self.pubkey()}
 
     def receive_salt_pubkey(self, parameters: dict[str, int]) -> None:
@@ -112,7 +116,7 @@ class Server(SRPPeer):
         x = self._integer_hash(self.salt, self.P)
         self._v = pow(self.g, x, self.N)
 
-    def negotiate_receive(self, parameters: dict[str, Any]) -> None:
+    def negotiate_receive(self, parameters: Parameters) -> None:
         self.N = parameters["N"]
         self.g = parameters["g"]
         self.k = parameters["k"]
@@ -122,7 +126,7 @@ class Server(SRPPeer):
     def send_salt_pubkey(self) -> dict[str, int]:
         return {"salt": self.salt, "pubkey": self.pubkey()}
 
-    def receive_email_pubkey(self, parameters: dict[str, Any]) -> None:
+    def receive_email_pubkey(self, parameters: EmailPubKey) -> None:
         if self.I != parameters["I"]:
             raise ValueError("Expected {self.I}, got {parameters['I']} instead")
         self.A = parameters["pubkey"]
@@ -140,8 +144,8 @@ def srp_protocol(client: Client, server: Server) -> int:
 
     server.verifier()
 
-    parameters = client.send_email_pubkey()
-    server.receive_email_pubkey(parameters)
+    email_pubkey = client.send_email_pubkey()
+    server.receive_email_pubkey(email_pubkey)
 
     parameters_salt_pubkey = server.send_salt_pubkey()
     client.receive_salt_pubkey(parameters_salt_pubkey)

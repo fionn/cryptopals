@@ -6,7 +6,7 @@ import socket
 import json
 import threading
 import logging
-from typing import NamedTuple, Optional, Any
+from typing import NamedTuple, Optional, Mapping, TypedDict
 
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randrange
@@ -15,16 +15,20 @@ from m09 import pkcs7, de_pkcs7
 from m10 import encrypt_aes_cbc, decrypt_aes_cbc
 from m28 import SHA1
 
+Address = NamedTuple("Address", [("host", str), ("port", int)])
+ConnPacket = TypedDict("ConnPacket", {"name": str, "address": Address})
+ParamPacket = TypedDict("ParamPacket", {"p": int, "g": int})
+
 class DHSocket:  # pylint: disable=too-many-instance-attributes
 
     NULL_BYTES = bytes(32)
-    Peer = NamedTuple("Peer", [("name", str), ("address", tuple[str, int]),
+    Peer = NamedTuple("Peer", [("name", str), ("address", Address),
                                ("origin", Optional[str]), ("pubkey", Optional[int]),
                                ("socket", socket.socket)])
     Buffer = NamedTuple("Buffer", [("origin", str), ("data", bytes)])
 
     def __init__(self, name: str, p: int = None, g: int = None,
-                 address: tuple[str, int] = ("localhost", 0)) -> None:
+                 address: Address = Address("localhost", 0)) -> None:
         self.name = name
         self.p = p
         self.g = g
@@ -36,7 +40,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
         self._sock_incoming = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock_incoming.bind(address)
         self._sock_incoming.listen()
-        self.address = self._sock_incoming.getsockname()
+        self.address = Address(*self._sock_incoming.getsockname())
 
         self._connection: socket.socket = None
         self._stop_listening = threading.Event()
@@ -106,23 +110,23 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
         data += self.NULL_BYTES
         peer.socket.send(data)
 
-    def _send_dict(self, data: dict[str, Any], peer: Peer = None) -> None:
+    def _send_dict(self, data: Mapping[str, object], peer: Peer = None) -> None:
         peer = peer or self._peer
         if not peer:
             raise Exception
         data_encoded = json.dumps(data).encode()
         self._send(data_encoded, peer)
 
-    def _receive_connection(self, packet: dict[str, Any], origin: str) -> None:
+    def _receive_connection(self, packet: ConnPacket, origin: str) -> None:
         self._peer = self.Peer(name=packet["name"],
-                               address=tuple(packet["address"]),  # type: ignore
+                               address=packet["address"],
                                origin=origin,
                                pubkey=None,
                                socket=socket.socket(socket.AF_INET,
                                                     socket.SOCK_STREAM))
         self._peer.socket.connect(self._peer.address)
 
-    def connect(self, peer_name: str, peer_address: tuple[str, int]) -> None:
+    def connect(self, peer_name: str, peer_address: Address) -> None:
         self._peer = self.Peer(name=peer_name,
                                address=peer_address,
                                origin=None,
@@ -143,6 +147,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
             self.g = packet.get("g", self.g)
             peer_pubkey = packet.get("pubkey", None)
             if {"name", "address"} <= set(packet):
+                packet["address"] = Address(*packet["address"])
                 self._receive_connection(packet, raw_packet.origin)
             if peer_pubkey is not None and self._peer.pubkey is None:
                 self._peer = self._peer._replace(pubkey=packet["pubkey"])
@@ -187,9 +192,9 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
 class DHMaliciousSocket(DHSocket):
 
     def __init__(self, name: str, bad_g: int,
-                 address: tuple[str, int] = ("localhost", 0)) -> None:
+                 address: Address = Address("localhost", 0)) -> None:
         super().__init__(name, address=address)
-        self.original_g = None
+        self.original_g: int = None
         self.bad_g = bad_g
         self._peers: dict[str, DHSocket.Peer] = {}
 
@@ -208,7 +213,7 @@ class DHMaliciousSocket(DHSocket):
                 raise e
         super()._send(data, peer)
 
-    def _add_peer(self, peer_name: str, peer_address: tuple[str, int],
+    def _add_peer(self, peer_name: str, peer_address: Address,
                   origin: str = None, pubkey: int = None) -> None:
         peer = self.Peer(name=peer_name,
                          address=peer_address,
@@ -220,7 +225,7 @@ class DHMaliciousSocket(DHSocket):
         if origin:
             self._peers[origin] = peer
 
-    def _mitm_parameters(self, peer_name: str, packet: dict[str, Any]) -> None:
+    def _mitm_parameters(self, peer_name: str, packet: ParamPacket) -> None:
         self.original_g = packet["g"]
         self.p: int = packet["p"]
         packet["g"] = self.bad_g
@@ -232,14 +237,14 @@ class DHMaliciousSocket(DHSocket):
             logging.info("%s swaps g = %s <--> g = %s",
                          self.name, self.original_g, x or y or self.bad_g)
 
-    def _mitm_connection(self, peer_name: str, peer_address: tuple[str, int],
-                         packet: dict[str, Any], origin: str) -> None:
+    def _mitm_connection(self, peer_name: str, peer_address: Address,
+                         packet: ConnPacket, origin: str) -> None:
         self._add_peer(packet["name"], packet["address"], origin)  # alice
         self._add_peer(peer_name, peer_address)  # bob
         self._send_dict(packet, self._peers[peer_name])
 
     def mitm(self, peer_name: str,
-             peer_address: tuple[str, int] = None) -> None:
+             peer_address: Address = None) -> None:
         raw_packet = self._get_buffer()
         try:
             packet = json.loads(raw_packet.data.decode("ascii"))

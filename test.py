@@ -857,12 +857,12 @@ class Test36(unittest.TestCase):
 
     def test_server_pubkey(self) -> None:
         """server-side public key"""
-        parameters = {"N": PRIME,
-                      "g": 2,
-                      "k": 3,
-                      "I": "some@ema.il",
-                      "p": "password"
-                     }
+        parameters: m36.Parameters = {"N": PRIME,
+                                      "g": 2,
+                                      "k": 3,
+                                      "I": "some@ema.il",
+                                      "p": "password"
+                                     }
         steve = m36.Server()
         steve.negotiate_receive(parameters)
         steve.verifier()
@@ -871,26 +871,26 @@ class Test36(unittest.TestCase):
 
     def test_bad_email(self) -> None:
         """mismatched emails"""
-        parameters = {"N": PRIME,
-                      "g": 2,
-                      "k": 3,
-                      "I": "some@ema.il",
-                      "p": "password"
-                     }
+        parameters: m36.Parameters = {"N": PRIME,
+                                      "g": 2,
+                                      "k": 3,
+                                      "I": "some@ema.il",
+                                      "p": "password"
+                                     }
         steve = m36.Server()
         steve.negotiate_receive(parameters)
-        bad_parameters = {"I": "diff@e.mail", "pubkey": 123}
+        bad_parameters: m36.EmailPubKey = {"I": "diff@e.mail", "pubkey": 123}
         self.assertRaises(ValueError,
                           lambda: steve.receive_email_pubkey(bad_parameters))
 
     def test_bad_hmac(self) -> None:
         """hmacs don't match"""
-        parameters = {"N": PRIME,
-                      "g": 2,
-                      "k": 3,
-                      "I": "some@ema.il",
-                      "p": "password"
-                     }
+        parameters: m36.Parameters = {"N": PRIME,
+                                      "g": 2,
+                                      "k": 3,
+                                      "I": "some@ema.il",
+                                      "p": "password"
+                                     }
         steve = m36.Server()
         steve.negotiate_receive(parameters)
         steve.scrambler()
@@ -1146,7 +1146,7 @@ class Test43(unittest.TestCase):
     def data() -> dict[str, str]:
         """Load data from file"""
         with open("data/43.txt") as data_fd:
-            return json.load(data_fd)
+            return json.load(data_fd)  # type: ignore
 
     def test_verify_dsa_signature(self) -> None:
         """Sign a message and verify the DSA signature"""

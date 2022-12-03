@@ -3,7 +3,7 @@
 
 import json
 import functools
-from typing import Union, Any
+from typing import Any
 
 import m39
 import m43
@@ -28,7 +28,7 @@ def get_messages(filename: str = "data/44.txt") -> list[dict[str, Any]]:
 
     messages = []
     for i in range(0, len(lines), 4):
-        element: dict[str, Union[bytes, int]] = {}
+        element: dict[str, bytes | int] = {}
         element["msg"] = lines[i].split("msg: ")[1].strip("\n").encode()
         element["s"] = int(lines[i + 1].split("s: ", maxsplit=1)[1])
         element["r"] = int(lines[i + 2].split("r: ", maxsplit=1)[1])
@@ -54,10 +54,10 @@ def group_by_repeated_k(messages: list[dict[str, Any]]) \
 
 def recover_k(message_1: dict[str, Any], message_2: dict[str, Any],
               q: int) -> int:
-    m_1 = message_1["m"]
-    m_2 = message_2["m"]
-    s_1 = message_1["s"]
-    s_2 = message_2["s"]
+    m_1: int = message_1["m"]
+    m_2: int = message_2["m"]
+    s_1: int = message_1["s"]
+    s_2: int = message_2["s"]
 
     return m39.invmod((s_1 - s_2) % q, q) * ((m_1 - m_2) % q) % q
 

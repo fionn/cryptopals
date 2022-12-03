@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Break a SHA-1 keyed MAC using length extension"""
 
-from typing import Generator
+from collections.abc import Iterator
 
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randint
@@ -24,7 +24,7 @@ def verify_sha1_mac(d: SHA1, message: bytes, key: bytes) -> bool:
 def md_padding(data: bytes) -> bytes:
     return SHA1.pad_message(data)[len(data):]
 
-def extend_sha1(d: SHA1, z: bytes) -> Generator[SHA1, None, None]:
+def extend_sha1(d: SHA1, z: bytes) -> Iterator[SHA1]:
     register = sha1_state_from_hex(d.hexdigest())
     padding = z + md_padding(z)
 

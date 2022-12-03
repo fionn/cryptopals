@@ -85,14 +85,14 @@ class ServerV2:
         return compare_digest(cbc_mac(KEY, bytes(16), message), mac)
 
     @staticmethod
-    def process(payload: bytes) -> dict[str, list[dict[str, int]]]:
+    def process(payload: bytes) -> dict[str, str | list[dict[str, Any]]]:
         if not ServerV2.validate(payload):
             raise Exception("Invalid payload")
         message, _ = parse_payload_v2(payload)
         return ServerV2._transact(message)
 
     @staticmethod
-    def _transact(message: bytes) -> dict[str, list[dict[str, int]]]:
+    def _transact(message: bytes) -> dict[str, str | list[dict[str, Any]]]:
         """Terrible transaction processing"""
         transaction_dict: dict[str, Any] = {}
         for element in message.split(b"&"):

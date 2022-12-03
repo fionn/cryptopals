@@ -7,7 +7,8 @@
 import hmac
 import hashlib
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Optional
+from collections.abc import Iterator
 
 from Crypto.Random.random import randrange
 

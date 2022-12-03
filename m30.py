@@ -3,14 +3,15 @@
 
 import struct
 from copy import copy
-from typing import Generator, Tuple, Union
+from typing import Union
+from collections.abc import Iterator
 
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randint
 
 from m28 import HashBase, merkle_pad
 
-Register = Union[Tuple[int, ...], Tuple[int, int, int, int]]
+Register = Union[tuple[int, ...], tuple[int, int, int, int]]
 
 class MD4(HashBase):
     name = "md4"
@@ -40,7 +41,7 @@ class MD4(HashBase):
         assert len(data) % MD4.block_size == 0
         return data
 
-    def _chunks(self) -> Generator[bytes, None, None]:
+    def _chunks(self) -> Iterator[bytes]:
         data = self.pad_message(self.data)
         for i in range(0, len(data), self.block_size):
             yield data[i:i + self.block_size]
@@ -166,7 +167,7 @@ def verify_md4_mac(d: MD4, message: bytes, key: bytes) -> bool:
 def md_padding(data: bytes) -> bytes:
     return MD4.pad_message(data)[len(data):]
 
-def extend_md4(d: MD4, z: bytes) -> Generator[MD4, None, None]:
+def extend_md4(d: MD4, z: bytes) -> Iterator[MD4]:
     register = md4_state_from_hex(d.hexdigest())
     padding = z + md_padding(z)
 

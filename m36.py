@@ -5,7 +5,7 @@ import hmac
 import hashlib
 from functools import cache
 from abc import ABC, abstractmethod
-from typing import Union, Any
+from typing import Any
 
 from Crypto.Random.random import randrange
 
@@ -17,7 +17,7 @@ def prime() -> int:
 class IntegerHasher:
 
     @staticmethod
-    def _integer_hash(a: Union[str, int], b: Union[str, int]) -> int:
+    def _integer_hash(a: str | int, b: str | int) -> int:
         return int(hashlib.sha256((str(a) + str(b)).encode("ascii")).hexdigest(), 16)
 
 # pylint: disable=too-many-instance-attributes
@@ -72,14 +72,14 @@ class Client(SRPPeer):
             self.A = pow(self.g, self._a, self.N)
         return self.A
 
-    def negotiate_send(self) -> dict[str, Union[str, int]]:
+    def negotiate_send(self) -> dict[str, str | int]:
         return {"N": self.N,
                 "g": self.g,
                 "k": self.k,
                 "I": self.I,
                 "p": self.P}
 
-    def send_email_pubkey(self) -> dict[str, Union[str, int]]:
+    def send_email_pubkey(self) -> dict[str, str | int]:
         return {"I": self.I, "pubkey": self.pubkey()}
 
     def receive_salt_pubkey(self, parameters: dict[str, int]) -> None:

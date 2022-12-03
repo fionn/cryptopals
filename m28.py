@@ -3,9 +3,10 @@
 
 import abc
 from copy import copy
-from typing import Generator, Tuple, Union, Literal
+from typing import Union, Literal
+from collections.abc import Iterator
 
-Register = Union[Tuple[int, ...], Tuple[int, int, int, int, int]]
+Register = Union[tuple[int, ...], tuple[int, int, int, int, int]]
 
 def merkle_pad(data: bytes, blocksize: int,
                byteorder: Literal["little", "big"],
@@ -84,7 +85,7 @@ class SHA1(HashBase):
         assert len(data) % SHA1.block_size == 0
         return data
 
-    def _chunks(self) -> Generator[bytes, None, None]:
+    def _chunks(self) -> Iterator[bytes]:
         data = self.pad_message(self.data)
         for i in range(0, len(data), self.block_size):
             yield data[i:i + self.block_size]

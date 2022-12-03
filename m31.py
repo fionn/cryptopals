@@ -8,8 +8,8 @@ import time
 import threading
 import urllib.request
 import urllib.error
-from typing import Generator
 from collections import namedtuple
+from collections.abc import Iterator
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from Crypto.Random import get_random_bytes
@@ -133,8 +133,7 @@ class HMACAttack:
         return status_code, delta
 
     @staticmethod
-    def _signature_generator(index: int,
-                             base: bytearray) -> Generator[bytes, None, None]:
+    def _signature_generator(index: int, base: bytearray) -> Iterator[bytes]:
         for j in range(256):
             base[index] = j
             yield base

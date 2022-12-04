@@ -154,7 +154,7 @@ class Test06(unittest.TestCase):
         """Hamming distance raises on different sizes"""
         s1 = b"different"
         s2 = b"sizes"
-        with self.assertRaises(IndexError):
+        with self.assertRaises(ValueError):
             m06.hamming_distance(s1, s2)
 
     def test_key(self) -> None:

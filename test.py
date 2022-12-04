@@ -124,8 +124,8 @@ class Test04(unittest.TestCase):
         """find_xored_string"""
         with open("data/04.txt", "r") as f:
             data = [bytes.fromhex(line) for line in f.read().splitlines()]
-        xored_string = b"Now that the party is jumping\n"
-        self.assertEqual(m04.findxoredstring(data), xored_string)
+        xored_message = b"Now that the party is jumping\n"
+        self.assertEqual(m04.find_xored_message(data), xored_message)
 
 class Test05(unittest.TestCase):
     """Implement repeating-key XOR"""

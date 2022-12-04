@@ -3,12 +3,12 @@
 # "hit the bull's eye, the kid don't play"
 
 def fixed_xor(a: bytes, b: bytes) -> bytes:
+    """Byte-by-byte xor of a, b"""
     return bytes([i ^ j for i, j in zip(a, b, strict=True)])
 
 def main() -> None:
     with open("data/02.txt", "r") as f:
-        f_list = f.read().splitlines()
-        a, b = f_list[0], f_list[1]
+        a, b = f.read().splitlines()
 
     a_bytes = bytes.fromhex(a)
     b_bytes = bytes.fromhex(b)

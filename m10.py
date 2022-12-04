@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Implement CBC mode"""
+# "In ecstasy in the back of me"
 
 from base64 import b64decode
 

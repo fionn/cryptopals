@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Implement repeating-key XOR"""
+# "Burning 'em, if you ain't quick and nimble
 
 import textwrap
 

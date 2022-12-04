@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """DSA nonce recovery from repeated nonce"""
+# "Listen for me, you better listen for me now."
 
 import json
 import functools

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Byte-at-a-time ECB decryption (harder)"""
+# "With my rag-top down so my hair can blow"
 
 from base64 import b64decode
 from typing import Callable

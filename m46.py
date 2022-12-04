@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """RSA parity oracle"""
+# "That's why I found you don't play around..."
 
 import base64
 

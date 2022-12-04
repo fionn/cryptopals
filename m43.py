@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """DSA key recovery from nonce"""
+# "For those that envy a MC it can be hazardous to your health"
 
 import json
 from typing import NamedTuple

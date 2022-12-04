@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Byte-at-a-time ECB decryption (simple)"""
+# "Rollin' in my 5.0"
 
 # pylint: disable=redefined-outer-name
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Convert hex to base64"""
+# "I'm killing your brain like a poisonous mushroom"
 
 import base64
 

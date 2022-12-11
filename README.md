@@ -87,7 +87,7 @@ Set 7: Hashes
 51. [x] [Compression Ratio Side-Channel Attacks](m51.py)
 52. [x] [Iterated Hash Function Multicollisions](m52.py)
 53. [x] [Kelsey and Schneier's Expandable Messages](m53.py)
-54. [ ] Kelsey and Kohno's Nostradamus Attack
+54. [x] [Kelsey and Kohno's Nostradamus Attack](m54.py)
 55. [ ] MD4 Collisions
 56. [ ] RC4 Single-Byte Biases
 

@@ -68,6 +68,7 @@ import m50
 import m51
 import m52
 import m53
+import m54
 
 KEY = b"YELLOW SUBMARINE"
 IV = bytes(len(KEY))
@@ -1680,6 +1681,116 @@ class Test53(unittest.TestCase):
 
         collision = m52.HashCollision((m, m_prime), m52.Chain(h, h_m))
         self.assertTrue(m52.verify_collision(collision))
+
+class Test54(unittest.TestCase):
+    """Kelsey and Kohno's Nostradamus Attack"""
+
+    @staticmethod
+    @functools.cache
+    def build_diamond_structure(k: int) -> m54.Tree:
+        return m54.build_diamond_structure(k)
+
+    def test_diamond_structure(self) -> None:
+        """Construct the diamond structure"""
+        tree = self.build_diamond_structure(2)
+        self.assertIs(tree.root.message, None)
+
+    def test_diamond_structure_size(self) -> None:
+        """Check that the Merkle tree has the expected size"""
+        k = 2
+        tree = self.build_diamond_structure(k)
+
+        level_traversed = tree.level_traverse([tree.root])
+        # We drop a power of two because of our level -1 source nodes.
+        k_prime = int(math.log(len(level_traversed) + 1, 2)) - 2
+
+        self.assertEqual(k, tree.k)
+        self.assertEqual(k, tree.height(tree.root) - 1)
+        self.assertEqual(k, k_prime)
+
+    def test_diamond_structure_traversal(self) -> None:
+        """Traverse the Merkle tree"""
+        tree = self.build_diamond_structure(2)
+        preorder_traversed_set = set(tree.preorder_traverse(tree.root))
+        level_traversed_set = set(tree.level_traverse([tree.root]))
+        self.assertEqual(preorder_traversed_set, level_traversed_set)
+
+    def test_diamond_structure_leaves(self) -> None:
+        """Check that the loweset level matches the leaves"""
+        k = 2
+        tree = self.build_diamond_structure(k)
+        level_traversed = tree.level_traverse([tree.root])
+        lowest_level = level_traversed[2 ** k  - 1: 2 ** (k + 1) - 1]
+        self.assertEqual(len(tree.leaves), 2 ** k)
+        self.assertEqual(tree.leaves, lowest_level)
+
+    def test_validate_root(self) -> None:
+        """Validate the root node hash"""
+        root = self.build_diamond_structure(2).root
+
+        self.assertEqual(m52.md(root.child.left.message,
+                                root.child.left.hash.digest()),
+                         root.hash.digest())
+
+        self.assertEqual(m52.md(root.child.right.message,
+                                root.child.right.hash.digest()),
+                         root.hash.digest())
+
+        h = root.child.left.hash.copy()
+        h.update(root.child.left.message)
+        self.assertEqual(h.digest(), root.hash.digest())
+
+        h = root.child.right.hash.copy()
+        h.update(root.child.right.message)
+        self.assertEqual(h.digest(), root.hash.digest())
+
+    def test_path_to_root(self) -> None:
+        """Find a path from leaf to root"""
+        k = 2
+        tree = self.build_diamond_structure(k)
+        path = tree.path_to_root(tree.root, tree.leaves[0])
+        self.assertEqual(len(path), k + 1)
+
+    def test_guess_spare_blocks(self) -> None:
+        """Guess the number of extra blocks we must anticipate"""
+        with open("data/54.txt", "rb") as f:
+            predictions = [l.strip() for l in f.readlines()]
+        self.assertEqual(m54.guess_spare_blocks(predictions), 3)
+
+    def test_chosen_target(self) -> None:
+        """Hash in the padding blocks"""
+        tree = self.build_diamond_structure(2)
+        spare_blocks = 2
+        self.assertTrue(m54.chosen_target(tree, spare_blocks))
+
+    def test_nostradamus_attack(self) -> None:
+        """The Nostradamus attack"""
+        with open("data/54.txt", "rb") as f:
+            predictions = [l.strip() for l in f.readlines()]
+
+        tree = m54.build_diamond_structure(2)
+        spare_blocks = m54.guess_spare_blocks(predictions)
+        commitment = m54.chosen_target(tree, spare_blocks)
+
+        forced_prefix = m54.pad(predictions[0])
+
+        link_message, leaf = m54.find_linking_message(forced_prefix, tree)
+        message = forced_prefix + link_message
+        self.assertEqual(leaf.hash.digest(), m52.md(message, leaf.hash.register))
+
+        path = tree.path_to_root(tree.root, leaf)
+        for i, node in enumerate(path[:-1]):
+            message += node.message
+            self.assertEqual(m52.md(message, node.hash.register),
+                             path[i + 1].hash.digest())
+
+        self.assertEqual(m52.md(message, tree.root.hash.register),
+                         tree.root.hash.digest())
+
+        padded_message = m54.pad(message)
+        self.assertEqual(m52.md(padded_message, tree.root.hash.register),
+                         commitment.digest())
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2, buffer=True)

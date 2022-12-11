@@ -10,7 +10,7 @@ import m52
 from m52 import md, pad, HashCollision, Chain, CheapHash as Hash
 
 def find_collision(k: int, h: bytes) -> Iterator[HashCollision]:
-    """Find colliding blocks of length 1 and length 2 ^ (k - 1) + 1"""
+    """Find colliding blocks of length 1 and length 2ᵏ⁻¹ + 1"""
     # This is FindCollision(α, h_in) in §3.2.
     q = bytes(Hash.block_size * 2 ** (k - 1))  # dummy blocks
     h_q = md(q, h)
@@ -24,12 +24,15 @@ def find_collision(k: int, h: bytes) -> Iterator[HashCollision]:
             yield HashCollision((pad(m), q + pad(m_prime)), Chain(h, h_next))
 
 def make_expandable_message(k: int, h: bytes) -> Iterator[HashCollision]:
-    """Make a (k, k + 2 ^ k - 1)-expandable message"""
+    """Make a (k, k + 2ᵏ - 1)-expandable message"""
     for i in range(k, 0, -1):
-        # pylint: disable=stop-iteration-return
-        collision = next(find_collision(i, h))
-        h = collision.hash.out
-        yield collision
+        try:
+            collision = next(find_collision(i, h))
+            h = collision.hash.out
+            yield collision
+        except StopIteration as ex:
+            raise RuntimeError(f"Failed to find collision for k = {i} "
+                               f"on {h.hex()}") from ex
 
 def produce_message(c: Sequence[HashCollision], k: int, l: int) -> bytes:
     """Produce a message of length l blocks from an expandable message"""
@@ -54,7 +57,7 @@ def generate_intermediate_states(m: bytes, h: bytes) -> Iterator[bytes]:
 def second_preimage_attack(m: bytes) -> bytes:
     """Find the second preimage of m"""
     # This is LongMessageAttack(M_target) in §4.2.
-    k = (len(m) // Hash.block_size).bit_length() - 1  # m has 2 ^ k blocks
+    k = (len(m) // Hash.block_size).bit_length() - 1  # m has 2ᵏ blocks
 
     intermediate_states = list(generate_intermediate_states(m, Hash.register))
     c = list(make_expandable_message(k, Hash.register))

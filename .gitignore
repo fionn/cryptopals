@@ -1,7 +1,5 @@
 *.swp
 tags
 venv/
-coverage/
 __pycache__/
-.mypy_cache/
 packages.*

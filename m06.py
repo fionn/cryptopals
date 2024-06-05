@@ -13,6 +13,7 @@ def hamming_distance(s1: bytes, s2: bytes) -> int:
 
 def find_keysize(cyphertext: bytes) -> int:
     bound = float("inf")
+    keysize = 0
     for k in range(2, 41):
         normal_distance = 0.0
         n_max = int(len(cyphertext) / k) - 2

@@ -33,7 +33,7 @@ def main() -> None:
     plaintext = prefix + b"A" * 14
 
     if not verify_mt19937_crypt(message=bytes(10), seed=0xffff):
-        raise RuntimeError("Failed to verify mt19937_crypt")
+        raise ValueError("Failed to verify mt19937_crypt")
 
     cyphertext = mt19937_crypt(plaintext, seed)
     found_seed = crack_mt19937(cyphertext)

@@ -69,13 +69,13 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
     @property
     def pubkey(self) -> int:
         if self.g is None or self.p is None:
-            raise Exception
+            raise RuntimeError
         return pow(self.g, self._a, self.p)
 
     def _session_key(self) -> int:
         if self._s is None:
             if self._peer is None:
-                raise Exception
+                raise RuntimeError
             self._s = pow(self._peer.pubkey, self._a, self.p)
         return self._s
 
@@ -113,7 +113,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
     def _send_dict(self, data: Mapping[str, object], peer: Peer = None) -> None:
         peer = peer or self._peer
         if not peer:
-            raise Exception
+            raise RuntimeError
         data_encoded = json.dumps(data).encode()
         self._send(data_encoded, peer)
 
@@ -160,7 +160,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
         g = g or self.g
         peer = peer or self._peer
         if not peer:
-            raise Exception
+            raise RuntimeError
         parameters = {"p": self.p, "g": g}
         self._send_dict(parameters, peer)
         logging.info("%s parameters --> %s@%s:%s",
@@ -272,7 +272,7 @@ class DHMaliciousSocket(DHSocket):
             self._s = 0
             return self.decrypt()
         if self.p is None:
-            raise Exception
+            raise RuntimeError
         if self.bad_g == self.p - 1:
             cyphertext = self._message_buffer.pop()
             longest_message = b""

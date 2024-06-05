@@ -59,7 +59,6 @@ class SHA1(HashBase):
     name = "sha1"
 
     def __init__(self, data: bytes = b"") -> None:
-        super().__init__(data)
         self.h: Register = (0x67452301, 0xefcdab89,
                             0x98badcfe, 0x10325476, 0xc3d2e1f0)
         self._current_register: Register = self.h

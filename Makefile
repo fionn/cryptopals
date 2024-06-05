@@ -13,10 +13,10 @@ venv: requirements.txt requirements_dev.txt
 packages.svg: $(SRC)
 	@pyreverse $(SRC) -o svg
 	@rm classes.svg
-	@sed -i "s/Times,serif/Inconsolata, DejaVu Sans Mono, monospace/g" $@
+	@sed -i "s/Times,serif/Inconsolata,monospace/g" $@
 
 tags: $(SRC) $(TEST)
-	@ctags --languages=python --python-kinds=-i $^
+	@ctags --languages=python $^
 
 .PHONY: test
 test:

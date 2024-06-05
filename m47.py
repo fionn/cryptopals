@@ -85,7 +85,7 @@ def intervals(n: int, s: int, M: set[range], B: int) -> set[range]:
             M_next.add(range(a_prime, b_prime))
 
     if not M_next:
-        raise Exception("Interval is empty")
+        raise ValueError("Interval is empty")
     return M_next
 
 def attack(oracle: RSAPaddingOracle, c_0: int) -> int:

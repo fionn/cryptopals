@@ -20,7 +20,6 @@ class MD4(HashBase):
     register = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476)
 
     def __init__(self, data: bytes = b"") -> None:
-        super().__init__(data)
         self._register: Register = MD4.register
         self.data = b""
         self._vandercorput = [self._binaryreverse(x) for x in range(16)]

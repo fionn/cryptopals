@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """CBC-MAC Message Forgery"""
 
+import json
 from functools import reduce
 from hmac import compare_digest
 from typing import TypedDict
@@ -49,7 +50,7 @@ class ServerV1:
     @staticmethod
     def process(payload: bytes) -> dict[str, str]:
         if not ServerV1.validate(payload):
-            raise Exception("Invalid payload")
+            raise ValueError("Invalid payload")
         message, _, _ = parse_payload_v1(payload)
         return ServerV1._transact(message)
 
@@ -90,7 +91,7 @@ class ServerV2:
     @staticmethod
     def process(payload: bytes) -> TransactionV2:
         if not ServerV2.validate(payload):
-            raise Exception("Invalid payload")
+            raise ValueError("Invalid payload")
         message, _ = parse_payload_v2(payload)
         return ServerV2._transact(message)
 
@@ -198,7 +199,7 @@ def main() -> None:
     assert tx["from"] == victim_id
     assert tx["to"] == attacker_id
     assert tx["amount"] == str(1000000)
-    print(tx)
+    print(json.dumps(tx, indent=2))
 
     # v2
     forgery = forge_via_length_extension(attacker_id, victim_id)
@@ -206,7 +207,7 @@ def main() -> None:
     txs = ServerV2.process(forgery)
     assert {"to": attacker_id, "amount": 1000000} in txs["tx_list"]
     assert txs["from"] == victim_id
-    print(txs)
+    print(json.dumps(txs, indent=2))
 
 if __name__ == "__main__":
     main()

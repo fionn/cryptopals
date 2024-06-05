@@ -27,7 +27,6 @@ class MDHash(HashBase, ABC):
     register = bytes(digest_size)
 
     def __init__(self, data: bytes = b"") -> None:
-        super().__init__(data)
         self._h = self.register
         self.update(data)
 

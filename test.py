@@ -10,8 +10,8 @@ import json
 import base64
 import hashlib
 import unittest
-import functools
 from unittest import mock
+from functools import cache
 
 from Crypto.Hash import MD4
 from Crypto.Cipher import AES
@@ -107,7 +107,7 @@ class Test03(unittest.TestCase):
     """Single-byte XOR cipher"""
 
     def test_xor_everything_sanity(self) -> None:
-        """xor_everything on \\x00 produces [\\x00, ..., \\xff]"""
+        """xor_everything on 0x00 produces [0x00, ..., 0xff]"""
         x = m03.xor_everything(b"\x00")
         self.assertEqual(len(x), 256)
         for i in range(256):
@@ -1157,7 +1157,7 @@ class Test43(unittest.TestCase):
     """DSA key recovery from nonce"""
 
     @staticmethod
-    @functools.cache
+    @cache
     def data() -> dict[str, str]:
         """Load data from file"""
         with open("data/43.txt") as data_fd:
@@ -1701,7 +1701,7 @@ class Test54(unittest.TestCase):
     """Kelsey and Kohno's Nostradamus Attack"""
 
     @staticmethod
-    @functools.cache
+    @cache
     def build_diamond_structure(k: int) -> m54.Tree:
         return m54.build_diamond_structure(k)
 
@@ -1735,7 +1735,7 @@ class Test54(unittest.TestCase):
         k = 2
         tree = self.build_diamond_structure(k)
         level_traversed = tree.level_traverse([tree.root])
-        lowest_level = level_traversed[2 ** k  - 1: 2 ** (k + 1) - 1]
+        lowest_level = level_traversed[2 ** k - 1: 2 ** (k + 1) - 1]
         self.assertEqual(len(tree.leaves), 2 ** k)
         self.assertEqual(tree.leaves, lowest_level)
 

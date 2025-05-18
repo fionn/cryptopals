@@ -16,7 +16,7 @@ def merkle_pad(data: bytes, blocksize: int,
     data += bytes((-width - len(data) % blocksize) % blocksize)
     return data + bit_length.to_bytes(width, byteorder)
 
-class HashBase(abc.ABC):
+class HashBase:
 
     @property
     @abc.abstractmethod

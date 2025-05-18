@@ -45,7 +45,7 @@ def verify(m: bytes, signature: int, public_key: m39.RSAKey) -> bool:
     r = re.compile(b"\x00\x01\xff+?\x00" + ASN1_SHA256 + b"(.{32})", re.DOTALL)
     match = r.match(block)
     if not match:
-        return False
+        return False  # type: ignore[unreachable]
 
     return hmac.compare_digest(hashlib.sha256(m).digest(), match.group(1))
 

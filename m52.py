@@ -6,7 +6,6 @@ from collections.abc import Iterator, Callable
 from typing import NamedTuple
 from functools import cache
 from copy import copy
-from abc import ABC
 
 from Crypto.Cipher import AES
 
@@ -20,8 +19,9 @@ Chain = NamedTuple("Chain", [("input", bytes), ("out", bytes)])
 HashCollision = NamedTuple("HashCollision",
                            [("messages", tuple[bytes, ...]), ("hash", Chain)])
 
-class MDHash(HashBase, ABC):
+class MDHash(HashBase):
     """Abstract HashBase with register property"""
+    name = "abstracthash"
     block_size = BLOCKSIZE
     digest_size = 20
     register = bytes(digest_size)

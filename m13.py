@@ -18,9 +18,8 @@ def parse(string: str) -> dict[str, str]:
 def profile_for(email: str) -> str:
     email = email.replace("&", "").replace("=", "")
     profile = {"email": email, "uid": 10, "role": "user"}
-    formatted = "&".join([key + "=" + str(profile[key])
-                          for key in ["email", "uid", "role"]])
-    return formatted
+    return "&".join([key + "=" + str(profile[key])
+                     for key in ["email", "uid", "role"]])
 
 def oracle(email: str) -> bytes:
     profile = profile_for(email)

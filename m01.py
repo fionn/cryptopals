@@ -8,7 +8,7 @@ def hex_to_base64(hex_str: str) -> str:
     return base64.b64encode(s_bytes).decode("ascii")
 
 def main() -> None:
-    with open("data/01.txt", "r") as s:
+    with open("data/01.txt") as s:
         print(hex_to_base64(s.read().strip()))
 
 if __name__ == "__main__":

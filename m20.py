@@ -37,7 +37,7 @@ def break_fixed_nonce_ctr(c: list[bytes]) -> list[bytes]:
     return [fixed_xor(cyphertext, k[:len(cyphertext)]) for cyphertext in c]
 
 def main() -> None:
-    with open("data/20.txt", "r") as f:
+    with open("data/20.txt") as f:
         data = [b64decode(e) for e in f.read().splitlines()]
 
     c = bulk_ctr(data)

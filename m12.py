@@ -15,7 +15,7 @@ from m11 import detect_ecb
 RANDOM_KEY = get_random_bytes(16)
 
 def oracle(plaintext: bytes) -> bytes:
-    with open("data/12.txt", "r") as data_handle:
+    with open("data/12.txt") as data_handle:
         unknown_string = b64decode(data_handle.read())
     plaintext = pkcs7(plaintext + unknown_string, 16)
     cypher = AES.new(RANDOM_KEY, AES.MODE_ECB)

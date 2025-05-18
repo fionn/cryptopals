@@ -8,7 +8,7 @@ from m20 import bulk_ctr, break_fixed_nonce_ctr
 
 # I overthought this and accidentally did 20 instead.
 def main() -> None:
-    with open("data/19.txt", "r") as f:
+    with open("data/19.txt") as f:
         data = [b64decode(e) for e in f.read().splitlines()]
 
     c = bulk_ctr(data)

@@ -17,7 +17,7 @@ def find_keysize(cyphertext: bytes) -> int:
     for k in range(2, 41):
         normal_distance = 0.0
         n_max = int(len(cyphertext) / k) - 2
-        for n in range(0, n_max):
+        for n in range(n_max):
             b1 = cyphertext[k * n:k * (n + 1)]
             b2 = cyphertext[k * (n + 1):k * (n + 2)]
             normal_distance += hamming_distance(b1, b2) / (k * n_max)
@@ -38,7 +38,7 @@ def break_repeating_key_xor(cyphertext: bytes) -> bytes:
     return repeating_key_xor(key(cyphertext), cyphertext)
 
 def main() -> None:
-    with open("data/06.txt", "r") as data:
+    with open("data/06.txt") as data:
         cyphertext = base64.b64decode(data.read())
     print(break_repeating_key_xor(cyphertext).decode())
 

@@ -10,7 +10,7 @@ def repeating_key_xor(key: bytes, message: bytes) -> bytes:
     return fixed_xor(key, message)
 
 def main() -> None:
-    with open("data/05.txt", "r") as file_handle:
+    with open("data/05.txt") as file_handle:
         data = file_handle.read().rstrip()
 
     key = b"ICE"

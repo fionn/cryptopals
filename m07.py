@@ -6,7 +6,7 @@ from base64 import b64decode
 from Crypto.Cipher import AES
 
 def main() -> None:
-    with open("data/07.txt", "r") as data:
+    with open("data/07.txt") as data:
         cyphertext = b64decode(data.read())
 
     key = b"YELLOW SUBMARINE"

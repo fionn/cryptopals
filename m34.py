@@ -12,7 +12,7 @@ class DHProtocolPeer(DHPeer):
 
     def __init__(self, p: int, g: int, peer: "DHProtocolPeer" = None) -> None:
         super().__init__(p, g)
-        self.peer: "DHProtocolPeer" = peer
+        self.peer: DHProtocolPeer = peer
         self.A = self.public_key()
         self._B: int = None
         self.received_cyphertext: bytes = None
@@ -96,7 +96,7 @@ def dh_parameter_injection(p: int, g: int, message: bytes) -> bytes:
     return intercepted_set.pop()
 
 def main() -> None:
-    with open("data/33.txt", "r", encoding="ascii") as fd:
+    with open("data/33.txt") as fd:
         p = int(fd.read().replace("\n", ""), 16)
     g = 2
 

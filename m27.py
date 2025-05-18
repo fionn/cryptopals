@@ -12,10 +12,7 @@ from m10 import encrypt_aes_cbc, decrypt_aes_cbc
 RANDOM_KEY = get_random_bytes(16)
 
 def ascii_compliant(plaintext: bytes) -> bool:
-    for b in plaintext:
-        if b > 127:
-            return False
-    return True
+    return all(b <= 127 for b in plaintext)
 
 def oracle(cyphertext: bytes) -> Optional[bytes]:
     key = RANDOM_KEY

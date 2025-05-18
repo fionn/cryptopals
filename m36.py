@@ -15,7 +15,7 @@ EmailPubKey = TypedDict("EmailPubKey", {"I": str, "pubkey": int})
 
 @cache
 def prime() -> int:
-    with open("data/33.txt", "r") as prime_file:
+    with open("data/33.txt") as prime_file:
         return int(prime_file.read().replace("\n", ""), 16)
 
 class IntegerHasher:
@@ -127,7 +127,7 @@ class Server(SRPPeer):
         return {"salt": self.salt, "pubkey": self.pubkey()}
 
     def receive_email_pubkey(self, parameters: EmailPubKey) -> None:
-        if self.I != parameters["I"]:
+        if parameters["I"] != self.I:
             raise ValueError("Expected {self.I}, got {parameters['I']} instead")
         self.A = parameters["pubkey"]
 

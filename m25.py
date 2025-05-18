@@ -22,7 +22,7 @@ def break_rarw(cyphertext: bytes) -> bytes:
     return fixed_xor(cyphertext, edited_cyphertext)
 
 def main() -> None:
-    with open("data/25.txt", "r") as f:
+    with open("data/25.txt") as f:
         c = b64decode(f.read())
     k = b"YELLOW SUBMARINE"
     cypher = AES.new(k, AES.MODE_ECB)

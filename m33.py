@@ -29,7 +29,7 @@ def dh_key_exchange(p: int, g: int) -> tuple[int, int]:
     return s_a, s_b
 
 def main() -> None:
-    with open("data/33.txt", "r") as p_file:
+    with open("data/33.txt") as p_file:
         p = int(p_file.read().replace("\n", ""), 16)
     g = 2
 

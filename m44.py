@@ -74,7 +74,7 @@ def main() -> None:
         assert m43.verify(message["msg"], signature, y, p, q, g)
 
     message_groups = group_by_repeated_k(messages)
-    message_group = [x for x in message_groups if len(x) > 1][0]
+    message_group = next(x for x in message_groups if len(x) > 1)
 
     k = recover_k(message_group[0], message_group[1], q)
     message = message_group[0]

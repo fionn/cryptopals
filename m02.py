@@ -7,7 +7,7 @@ def fixed_xor(a: bytes, b: bytes) -> bytes:
     return bytes([i ^ j for i, j in zip(a, b, strict=True)])
 
 def main() -> None:
-    with open("data/02.txt", "r") as f:
+    with open("data/02.txt") as f:
         a, b = f.read().splitlines()
 
     a_bytes = bytes.fromhex(a)

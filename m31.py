@@ -126,7 +126,7 @@ class HMACAttack:
                 status_code = response.getcode()
         except urllib.error.HTTPError as e:
             if e.code not in {200, 500}:
-                raise e
+                raise
             status_code = e.code
 
         delta = time.time() - start_time

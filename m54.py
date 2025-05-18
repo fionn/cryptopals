@@ -3,9 +3,10 @@
 # Herding Hash Functions
 # https://ia.cr/2005/281
 
-from math import log
+from math import log2
 from random import choice
-from typing import NamedTuple, Iterator
+from typing import NamedTuple
+from collections.abc import Iterator
 from functools import cached_property
 
 from Crypto.Random import get_random_bytes
@@ -42,7 +43,7 @@ class Tree:
 
     def __init__(self, leaves: list[Node]) -> None:
         self.leaves = leaves
-        self.k = int(log(len(leaves), 2))
+        self.k = int(log2(len(leaves)))
         self.root = self.brute_force_merkle_tree(leaves)
 
     @classmethod
@@ -66,7 +67,7 @@ class Tree:
 
     @classmethod
     def path_to_root(cls, root: Node, target_node: Node,
-                     path: list[Node] = None) -> list[Node]:
+                     path: list[Node] | None = None) -> list[Node]:
         """Returns a path from target_node to root"""
         if not root:
             return []
@@ -86,7 +87,7 @@ class Tree:
 
     @classmethod
     def preorder_traverse(cls, node: Node,
-                          traversed: list[Node] = None) -> list[Node]:
+                          traversed: list[Node] | None = None) -> list[Node]:
         """Traverse via the left and then right subtree"""
         traversed = traversed or []
         if node:
@@ -105,7 +106,7 @@ class Tree:
 
     @classmethod
     def level_traverse(cls, nodes: list[Node],
-                       traversed: list[Node] = None) -> list[Node]:
+                       traversed: list[Node] | None = None) -> list[Node]:
         """Traverse level-by-level"""
         traversed = traversed or []
         node = nodes.pop(0)
@@ -180,7 +181,7 @@ def chosen_target(tree: Tree, spare_blocks: int) -> MDHash:
 def find_linking_message(forced_prefix: bytes, tree: Tree) -> tuple[bytes, Node]:
     """Find a block that hashes to one of the leaf nodes"""
     assert len(forced_prefix) % tree.root.hash.block_size == 0
-    leaf_hashes = set(leaf.hash.digest() for leaf in tree.leaves)
+    leaf_hashes = {leaf.hash.digest() for leaf in tree.leaves}
 
     for m_int in range(2 ** (8 * tree.root.hash.digest_size)):
         m = pad(m_int.to_bytes(tree.root.hash.digest_size, "big"))
@@ -195,7 +196,7 @@ def find_linking_message(forced_prefix: bytes, tree: Tree) -> tuple[bytes, Node]
 def main() -> None:
     """Entry point"""
     with open("data/54.txt", "rb") as f:
-        predictions = [l.strip() for l in f.readlines()]
+        predictions = [l.strip() for l in f]
 
     k = 3
 

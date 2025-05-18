@@ -122,7 +122,7 @@ class Test04(unittest.TestCase):
 
     def test_find_xored_string(self) -> None:
         """find_xored_string"""
-        with open("data/04.txt", "r") as f:
+        with open("data/04.txt") as f:
             data = [bytes.fromhex(line) for line in f.read().splitlines()]
         xored_message = b"Now that the party is jumping\n"
         self.assertEqual(m04.find_xored_message(data), xored_message)
@@ -132,7 +132,7 @@ class Test05(unittest.TestCase):
 
     def test_repeating_key_xor(self) -> None:
         """repeating_key_xor"""
-        with open("data/05.txt", "r") as f:
+        with open("data/05.txt") as f:
             message = bytes(f.read().rstrip(), "ascii")
         key = b"ICE"
         c = m05.repeating_key_xor(key, message)
@@ -159,13 +159,13 @@ class Test06(unittest.TestCase):
 
     def test_key(self) -> None:
         """Generate key"""
-        with open("data/06.txt", "r") as f:
+        with open("data/06.txt") as f:
             cyphertext = base64.b64decode(f.read())
         self.assertEqual(m06.key(cyphertext), b"Terminator X: Bring the noise")
 
     def test_break_repeating_key_xor(self) -> None:
         """Break repeating key xor"""
-        with open("data/06.txt", "r") as f:
+        with open("data/06.txt") as f:
             cyphertext = base64.b64decode(f.read())
         self.assertEqual(m06.break_repeating_key_xor(cyphertext)[:33],
                          b"I'm back and I'm ringin' the bell")
@@ -180,7 +180,7 @@ class Test08(unittest.TestCase):
 
     def test_detct_ecb(self) -> None:
         """Detect ECB"""
-        with open("data/08.txt", "r") as f:
+        with open("data/08.txt") as f:
             g = [bytes.fromhex(cyphertext) for cyphertext in f.read().splitlines()]
         ecb_encrypted = m08.detect_ecb(g, BLOCKSIZE)
         self.assertIsNot(ecb_encrypted, None)
@@ -465,7 +465,7 @@ class Test28(unittest.TestCase):
 
         hs.add(hashlib.sha1(m).hexdigest())
 
-        self.assertEqual(hs, set(["da39a3ee5e6b4b0d3255bfef95601890afd80709"]))
+        self.assertEqual(hs, {"da39a3ee5e6b4b0d3255bfef95601890afd80709"})
 
     def test_sha1_long_input(self) -> None:
         """SHA1 of variable message length matches hashlib.sha1"""
@@ -708,7 +708,7 @@ class Test30(unittest.TestCase):
         verification = [m30.verify_md4_mac(q, m_prime, k)
                         for q in m30.extend_md4(mac, z)]
 
-        self.assertIn(True, verification)
+        self.assertIn(member=True, container=verification)
 
 class Test31(unittest.TestCase):
     """Implement and break HMAC-SHA1 with an artificial timing leak"""
@@ -822,7 +822,7 @@ class Test33(unittest.TestCase):
 
 class Test34(unittest.TestCase):
     """Implement a MITM key-fixing attack on Diffie-Hellman
-       with parameter injection"""
+    with parameter injection"""
 
     def test_dh_protocol(self) -> None:
         """Diffie-Hellman peer receives message"""
@@ -1161,7 +1161,7 @@ class Test43(unittest.TestCase):
     def data() -> dict[str, str]:
         """Load data from file"""
         with open("data/43.txt") as data_fd:
-            return json.load(data_fd)  # type: ignore
+            return json.load(data_fd)  # type: ignore[no-any-return]
 
     def test_verify_dsa_signature(self) -> None:
         """Sign a message and verify the DSA signature"""
@@ -1298,7 +1298,7 @@ class Test44(unittest.TestCase):
         q = parameters["q"]
 
         message_groups = m44.group_by_repeated_k(messages)
-        message_group = [x for x in message_groups if len(x) > 1][0]
+        message_group = next(x for x in message_groups if len(x) > 1)
 
         k = m44.recover_k(message_group[0], message_group[1], q)
 
@@ -1339,7 +1339,7 @@ class Test44(unittest.TestCase):
         p, q, g = parameters.values()
 
         message_groups = m44.group_by_repeated_k(messages)
-        message_group = [x for x in message_groups if len(x) > 1][0]
+        message_group = next(x for x in message_groups if len(x) > 1)
 
         k = m44.recover_k(message_group[0], message_group[1], q)
 
@@ -1508,7 +1508,7 @@ class Test49(unittest.TestCase):
         server = m49.ServerV1()
 
         parsed_message = {"to_id": "you", "amount": 1000}
-        request = client.send(**parsed_message)  # type: ignore
+        request = client.send(**parsed_message)  # type: ignore[arg-type]
 
         self.assertTrue(server.validate(request))
 
@@ -1519,7 +1519,7 @@ class Test49(unittest.TestCase):
         request = client.send(to_id="0002", amount=100)
         request += b"\x02"
         self.assertFalse(server.validate(request))
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             server.process(request)
 
     def test_v1_attack_variable_iv(self) -> None:
@@ -1539,7 +1539,7 @@ class Test49(unittest.TestCase):
         request = client.send({"2": 100})
         request += b"\x02"
         self.assertFalse(server.validate(request))
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             server.process(request)
 
     def test_v2_attack_via_length_extension(self) -> None:
@@ -1717,7 +1717,7 @@ class Test54(unittest.TestCase):
 
         level_traversed = tree.level_traverse([tree.root])
         # We drop a power of two because of our level -1 source nodes.
-        k_prime = int(math.log(len(level_traversed) + 1, 2)) - 2
+        k_prime = int(math.log2(len(level_traversed) + 1)) - 2
 
         self.assertEqual(k, tree.k)
         self.assertEqual(k, tree.height(tree.root) - 1)
@@ -1769,7 +1769,7 @@ class Test54(unittest.TestCase):
     def test_guess_spare_blocks(self) -> None:
         """Guess the number of extra blocks we must anticipate"""
         with open("data/54.txt", "rb") as f:
-            predictions = [l.strip() for l in f.readlines()]
+            predictions = [l.strip() for l in f]
         self.assertEqual(m54.guess_spare_blocks(predictions), 3)
 
     def test_chosen_target(self) -> None:
@@ -1781,7 +1781,7 @@ class Test54(unittest.TestCase):
     def test_nostradamus_attack(self) -> None:
         """The Nostradamus attack"""
         with open("data/54.txt", "rb") as f:
-            predictions = [l.strip() for l in f.readlines()]
+            predictions = [l.strip() for l in f]
 
         tree = m54.build_diamond_structure(2)
         spare_blocks = m54.guess_spare_blocks(predictions)

@@ -6,7 +6,7 @@ from typing import Optional
 def ecb_score(cyphertext: bytes, k: int) -> int:
     duplicates = 0
     blocks = [cyphertext[i:i + k] for i in range(0, len(cyphertext), k)]
-    for i in range(0, len(blocks)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(blocks)):  # pylint: disable=consider-using-enumerate
         for j in range(i + 1, len(blocks)):
             if blocks[i] == blocks[j]:
                 duplicates += 1
@@ -22,7 +22,7 @@ def detect_ecb(candidates: list[bytes], blocksize: int) -> Optional[bytes]:
     return ecb_candidate
 
 def main() -> None:
-    with open("data/08.txt", "r") as f:
+    with open("data/08.txt") as f:
         data = [bytes.fromhex(ct) for ct in f.read().splitlines()]
 
     blocksize = 16

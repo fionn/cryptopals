@@ -38,7 +38,7 @@ def decrypt_aes_cbc(key: bytes, iv: bytes, cyphertext: bytes) -> bytes:
     return plaintext
 
 def main() -> None:
-    with open("data/10.txt", "r") as data:
+    with open("data/10.txt") as data:
         cyphertext = b64decode(data.read())
 
     key = b"YELLOW SUBMARINE"

@@ -14,7 +14,7 @@ def find_xored_message(cyphertext: list[bytes]) -> bytes:
     return most_probable(candidates)
 
 def main() -> None:
-    with open("data/04.txt", "r") as f:
+    with open("data/04.txt") as f:
         data = [bytes.fromhex(line) for line in f.read().splitlines()]
 
     print(find_xored_message(data).decode())

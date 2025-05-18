@@ -11,16 +11,14 @@ from m02 import fixed_xor
 
 def aes_ctr(cyphertext: bytes, key: bytes, nonce: int = 0) -> bytes:
     c = [cyphertext[16 * i:16 * (i + 1)]
-         for i in range(0, len(cyphertext) // 16 + 1)]
+         for i in range(len(cyphertext) // 16 + 1)]
 
     cypher = AES.new(key, AES.MODE_ECB)
 
     message = b""
-    ctr = 0
-    for block in c:
+    for ctr, block in enumerate(c):
         keystream = pack("<Qq", nonce, ctr)
         message += fixed_xor(cypher.encrypt(keystream)[:len(block)], block)
-        ctr += 1
     return message
 
 def main() -> None:

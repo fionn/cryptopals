@@ -13,7 +13,7 @@ RANDOM_KEY = get_random_bytes(16)
 IV = get_random_bytes(16)
 
 def choose_plaintext() -> bytes:
-    with open("data/17.txt", "r") as f:
+    with open("data/17.txt") as f:
         data = f.read().splitlines()
     return b64decode(choice(data))
 

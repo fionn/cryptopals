@@ -6,7 +6,8 @@ import socket
 import json
 import threading
 import logging
-from typing import NamedTuple, Optional, Mapping, TypedDict
+from typing import NamedTuple, Optional, TypedDict
+from collections.abc import Mapping
 
 from Crypto.Random import get_random_bytes
 from Crypto.Random.random import randrange
@@ -180,9 +181,7 @@ class DHSocket:  # pylint: disable=too-many-instance-attributes
     def decrypt(self, cyphertext: bytes = None) -> bytes:
         cyphertext = cyphertext or self._message_buffer.pop()
         iv = cyphertext[-16:]
-        message = de_pkcs7(decrypt_aes_cbc(self._aes_key(), iv,
-                                           cyphertext[:-16]))
-        return message
+        return de_pkcs7(decrypt_aes_cbc(self._aes_key(), iv, cyphertext[:-16]))
 
     def echo_message(self) -> None:
         cyphertext = self._message_buffer.pop()
@@ -210,7 +209,7 @@ class DHMaliciousSocket(DHSocket):
             # Transport endpoint is already connected, or
             # socket is already connected
             if e.errno not in {106, 56}:
-                raise e
+                raise
         super()._send(data, peer)
 
     def _add_peer(self, peer_name: str, peer_address: Address,
@@ -344,7 +343,7 @@ def dh_malicious_g(p: int, g: int, message: bytes, bad_g: int) -> bytes:
     return plaintext
 
 def main() -> None:
-    with open("data/33.txt", "r") as p_file:
+    with open("data/33.txt") as p_file:
         p = int(p_file.read().replace("\n", ""), 16)
     g = 2
 
